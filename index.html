@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>হিসাব</title>
+<meta name="theme-color" content="#10171A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="হিসাব">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+
+<style>
+  :root{
+    --bg:#10171A; --surface:#1B2528; --surface2:#212C30;
+    --accent:#34D399; --warm:#FFB454; --debt:#FF6B6B;
+    --text:#EAF2EF; --muted:#8FA39D; --border:#28353A;
+  }
+  body[data-theme="light"]{
+    --bg:#F5F7F6; --surface:#FFFFFF; --surface2:#FFFFFF;
+    --accent:#0E9F6E; --warm:#D97F0A; --debt:#DC2626;
+    --text:#10171A; --muted:#6B7B77; --border:#E1E7E4;
+  }
+  body[data-theme="light"] .topbar{background:linear-gradient(180deg,#FFFFFF 0%, #F5F7F6 100%); box-shadow:0 1px 0 rgba(0,0,0,0.03);}
+  body[data-theme="light"] .bottomnav{background:#FFFFFF;}
+  body[data-theme="light"] .card, body[data-theme="light"] .month-block, body[data-theme="light"] .acct-card{box-shadow:0 1px 3px rgba(16,23,26,0.06);}
+  body[data-theme="light"] .code-box{background:#F0F2F1; color:#0E9F6E;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);}
+  #root{margin:0;padding:0;}
+  .app{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Bengali","Hind Siliguri",Roboto,sans-serif;
+    background:var(--bg); color:var(--text);
+    max-width:430px; margin:0 auto; min-height:100vh;
+    display:flex; flex-direction:column; position:relative; overflow-x:hidden;
+  }
+  @keyframes logoPulse{0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.1);opacity:0.72;}}
+  .loading-screen{display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;}
+  .loading-logo{width:84px;height:84px;border-radius:22px;animation:logoPulse 1.3s ease-in-out infinite;box-shadow:0 0 34px rgba(52,211,153,0.35);}
+  .topbar{padding:20px 20px 16px;background:linear-gradient(180deg,#141C1F 0%, #10171A 100%);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5;}
+  .topbar .brandrow{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .topbar .brand{display:flex;align-items:center;gap:10px;min-width:0;}
+  .topbar .brand img{width:30px;height:30px;border-radius:9px;flex-shrink:0;}
+  .topbar h1{font-size:18px;margin:0;font-weight:700;letter-spacing:0.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .topbar .sub{color:var(--muted);font-size:13px;margin-top:4px;display:flex;align-items:center;gap:6px;}
+  .synkdot{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;}
+  .icon-btn{background:none;border:none;color:var(--muted);font-size:19px;cursor:pointer;padding:4px 6px;flex-shrink:0;}
+  .icon-btn:hover{color:var(--text);}
+  .back-btn{
+    width:34px;height:34px;border-radius:11px;border:1px solid var(--border);
+    background:var(--surface);color:var(--text);font-size:16px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+  }
+  .back-btn:active{background:var(--surface2);}
+  .fab-settings{
+    position:fixed;bottom:20px;right:20px;
+    width:52px;height:52px;border-radius:16px;
+    background:var(--surface2);border:1px solid var(--border);color:var(--text);
+    font-size:21px;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 18px rgba(0,0,0,0.25);cursor:pointer;z-index:11;
+  }
+  .fab-settings.raised{bottom:88px;}
+  .fab-settings:active{transform:scale(0.94);}
+  .hub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:8px 0 4px;}
+  .hub-item{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 6px;cursor:pointer;}
+  .hub-item .hic{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+  .hub-item .hlabel{font-size:11.5px;font-weight:600;text-align:center;color:var(--text);}
+  .hub-back{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;cursor:pointer;margin-bottom:14px;}
+  .content{flex:1;padding:16px 16px 100px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:14px;}
+  .ring-wrap{display:flex;align-items:center;gap:18px;}
+  .ring-labels{flex:1;}
+  .ring-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;}
+  .ring-row .name{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);}
+  .ring-row .swatch{width:10px;height:10px;border-radius:3px;}
+  .ring-row .amt{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;}
+  .balance-banner{margin-top:10px;padding:14px 16px;border-radius:14px;display:flex;align-items:center;gap:12px;}
+  .balance-banner.owe{background:rgba(255,107,107,0.12);border:1px solid rgba(255,107,107,0.35);}
+  .balance-banner.even{background:rgba(143,163,157,0.12);border:1px solid var(--border);}
+  .balance-banner .icon{font-size:22px;}
+  .balance-banner .txt{font-size:14.5px;line-height:1.4;}
+  .balance-banner .txt b{font-variant-numeric:tabular-nums;}
+  .section-title{font-size:13px;color:var(--muted);margin:22px 4px 10px;font-weight:600;letter-spacing:0.3px;display:flex;justify-content:space-between;align-items:center;}
+  .entry{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid var(--border);}
+  .entry:last-child{border-bottom:none;}
+  .entry .avatar{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;}
+  .entry .info{flex:1;min-width:0;}
+  .entry .desc{font-size:14.5px;font-weight:600;}
+  .entry .meta{font-size:12px;color:var(--muted);margin-top:2px;}
+  .entry .amt{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;}
+  .entry .del{background:none;border:none;color:var(--muted);font-size:16px;padding:6px;cursor:pointer;opacity:0.6;}
+  .entry .del:hover{opacity:1;color:var(--debt);}
+  .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;}
+  .empty .big{font-size:32px;margin-bottom:8px;}
+  .bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#141C1F;border-top:1px solid var(--border);display:flex;padding:10px 10px calc(10px + env(safe-area-inset-bottom));z-index:10;}
+  .navbtn{flex:1;background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;padding:6px 0;cursor:pointer;font-family:inherit;}
+  .navbtn .ic{font-size:20px;}
+  .navbtn.active{color:var(--accent);}
+  .fab{position:fixed;bottom:78px;left:50%;transform:translateX(calc(-50% + 145px));width:58px;height:58px;border-radius:18px;background:var(--accent);color:#08201A;border:none;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(52,211,153,0.4);cursor:pointer;z-index:11;}
+  .sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:20;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn 0.2s ease;overflow-y:auto;}
+  @keyframes fadeIn{from{opacity:0} to{opacity:1}}
+  .sheet{background:var(--surface2);width:100%;max-width:430px;border-radius:22px 22px 0 0;padding:10px 20px 28px;animation:slideUp 0.25s cubic-bezier(.2,.8,.2,1);max-height:92vh;overflow-y:auto;}
+  @keyframes slideUp{from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1}}
+  .sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:6px auto 16px;}
+  .sheet h2{font-size:17px;margin:0 0 16px;}
+  .sheet h3{font-size:13.5px;color:var(--muted);margin:20px 0 10px;text-transform:uppercase;letter-spacing:0.4px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+  .field input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;}
+  .field input:focus{outline:none;border-color:var(--accent);}
+  .payer-toggle{display:flex;gap:10px;flex-wrap:wrap;}
+  .payer-toggle button{flex:1;min-width:90px;padding:14px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;}
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{padding:8px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .btn-primary{width:100%;padding:15px;border-radius:14px;border:none;background:var(--accent);color:#08201A;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;margin-top:6px;}
+  .btn-ghost{width:100%;padding:13px;border-radius:14px;border:1px solid var(--border);background:none;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;margin-top:8px;}
+  .btn-row{display:flex;gap:10px;}
+  .btn-row .btn-ghost{margin-top:0;}
+  .month-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;}
+  .month-block .mtitle{font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center;}
+  .month-block .mstat{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+  .cat-bar-row{margin-bottom:10px;}
+  .cat-bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:4px;}
+  .cat-bar-fill{height:100%;border-radius:4px;}
+  .receipt-thumb{width:28px;height:28px;border-radius:8px;object-fit:cover;border:1px solid var(--border);cursor:pointer;}
+  .photo-modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:40;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .photo-modal img{max-width:100%;max-height:100%;border-radius:12px;}
+  .photo-modal .closebtn{position:absolute;top:20px;right:20px;background:var(--surface2);border:none;color:var(--text);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;}
+  .viewer-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;gap:8px;}
+  .viewer-row:last-child{border-bottom:none;}
+  .lang-row{display:flex;gap:8px;}
+  .lang-btn{flex:1;padding:10px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .lang-btn.sel{border-color:var(--accent);background:rgba(52,211,153,0.12);color:var(--accent);}
+  .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--surface2);color:var(--text);padding:11px 20px;border-radius:12px;font-size:13.5px;border:1px solid var(--border);z-index:30;max-width:90%;text-align:center;animation:fadeIn 0.2s ease;}
+  .setup-warning{margin:16px 0;padding:16px;background:rgba(255,180,84,0.12);border:1px solid rgba(255,180,84,0.4);border-radius:14px;font-size:13.5px;line-height:1.6;}
+  .setup-warning code{background:#0c1214;padding:2px 6px;border-radius:6px;font-size:12px;}
+  .code-box{background:#0c1214;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:10.5px;line-height:1.6;color:#9FE8C9;white-space:pre-wrap;word-break:break-all;margin-top:8px;}
+  .acct-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+  .acct-card .aic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+  .acct-card .ainfo{flex:1;min-width:0;}
+  .acct-card .aname{font-size:14.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .acct-card .arole{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .role-badge{font-size:10.5px;padding:3px 8px;border-radius:8px;font-weight:700;}
+  .type-toggle{display:flex;gap:10px;}
+  .type-toggle button{flex:1;padding:16px 10px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;text-align:center;}
+  .type-toggle button.sel{border-color:var(--accent);background:rgba(52,211,153,0.12);}
+  .type-toggle .ticon{font-size:24px;display:block;margin-bottom:6px;}
+  .type-toggle .tlabel{font-size:13px;font-weight:700;}
+  .pct-row{display:flex;align-items:center;gap:10px;padding:8px 0;}
+  .pct-row input{width:70px;text-align:center;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- ===================== FIREBASE SETUP =====================
+  ১) https://console.firebase.google.com এ ফ্রি প্রজেক্ট বানান
+  ২) Build → Realtime Database → Create Database → Start in test mode
+  ৩) Build → Authentication → Sign-in method → Google → Enable
+  ৪) Project settings → General → Your apps → Web (</>) → Register app
+  ৫) firebaseConfig থেকে নিচের FIREBASE_CONFIG এ apiKey/authDomain/databaseURL/projectId বসান
+  ৬) হোস্টিং ডোমেইন Authentication → Settings → Authorized domains এ যোগ করুন
+  ৭) Realtime Database → Rules এ এই নিয়ম বসান (মাল্টি-অ্যাকাউন্ট, bootstrap-safe):
+  {
+    "rules": {
+      "accountsMeta": {
+        ".read": "auth != null",
+        "$accountId": {
+          ".write": "auth != null && (!data.exists() || data.child('ownerEmail').val() == auth.token.email || (data.child('coEditorsList').val() != null && data.child('coEditorsList').val().contains('|' + auth.token.email + '|')))"
+        }
+      },
+      "accounts": {
+        "$accountId": {
+          "expenses": {
+            ".read": "auth != null && (root.child('accountsMeta/'+$accountId+'/ownerEmail').val() == auth.token.email || (root.child('accountsMeta/'+$accountId+'/coEditorsList').val() != null && root.child('accountsMeta/'+$accountId+'/coEditorsList').val().contains('|'+auth.token.email+'|')) || (root.child('accountsMeta/'+$accountId+'/viewerEmailsList').val() != null && root.child('accountsMeta/'+$accountId+'/viewerEmailsList').val().contains('|'+auth.token.email+'|')))",
+            ".write": "auth != null && (root.child('accountsMeta/'+$accountId+'/ownerEmail').val() == auth.token.email || (root.child('accountsMeta/'+$accountId+'/coEditorsList').val() != null && root.child('accountsMeta/'+$accountId+'/coEditorsList').val().contains('|'+auth.token.email+'|')))"
+          },
+          "history": {
+            ".read": "auth != null && (root.child('accountsMeta/'+$accountId+'/ownerEmail').val() == auth.token.email || (root.child('accountsMeta/'+$accountId+'/coEditorsList').val() != null && root.child('accountsMeta/'+$accountId+'/coEditorsList').val().contains('|'+auth.token.email+'|')) || (root.child('accountsMeta/'+$accountId+'/viewerEmailsList').val() != null && root.child('accountsMeta/'+$accountId+'/viewerEmailsList').val().contains('|'+auth.token.email+'|')))",
+            ".write": "auth != null && (root.child('accountsMeta/'+$accountId+'/ownerEmail').val() == auth.token.email || (root.child('accountsMeta/'+$accountId+'/coEditorsList').val() != null && root.child('accountsMeta/'+$accountId+'/coEditorsList').val().contains('|'+auth.token.email+'|')))"
+          }
+        }
+      },
+      "expenses": { ".read": "auth != null", ".write": "auth != null" },
+      "history": { ".read": "auth != null", ".write": "auth != null" },
+      "config": { ".read": "auth != null", ".write": "auth != null" }
+    }
+  }
+  (নিচের তিনটা লিগ্যাসি পাথ শুধু এক-বার মাইগ্রেশনের জন্য পড়া দরকার, মাইগ্রেশনের পর চাইলে এগুলোর রুল মুছেও দিতে পারবেন)
+========================================================== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, onValue, set, get, remove, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyAQxTmqQmFvXICzNa8DIEPVxpD7cnlS9r0",
+    authDomain: "mess-hisab-ca60b.firebaseapp.com",
+    databaseURL: "https://mess-hisab-ca60b-default-rtdb.firebaseio.com",
+    projectId: "mess-hisab-ca60b"
+  };
+
+  window.__firebaseReady = false;
+  try{
+    if(!FIREBASE_CONFIG.apiKey.startsWith("PASTE_")){
+      const fbApp = initializeApp(FIREBASE_CONFIG);
+      window.__db = getDatabase(fbApp);
+      window.__ref = ref;
+      window.__onValue = onValue;
+      window.__set = set;
+      window.__get = get;
+      window.__remove = remove;
+      window.__update = update;
+      window.__auth = getAuth(fbApp);
+      window.__googleProvider = new GoogleAuthProvider();
+      window.__signIn = () => signInWithPopup(window.__auth, window.__googleProvider);
+      window.__signOut = () => signOut(window.__auth);
+      window.__onAuthStateChanged = onAuthStateChanged;
+      window.__firebaseReady = true;
+    }
+  }catch(err){ console.error("Firebase init failed", err); }
+  window.dispatchEvent(new Event('firebase-checked'));
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script type="text/babel">
+const {useState, useEffect} = React;
+
+// প্রথমবার লিগ্যাসি মাইগ্রেশনের জন্য — আপনার পুরনো একক-হিসাবের মালিক ইমেইল
+const LEGACY_OWNER_EMAIL = "muftishibbir895@gmail.com";
+const LEGACY_ACCOUNT_NAME = "শিব্বির-মোবারক মেস হিসাব";
+const DEFAULT_PAYERS = ["শিব্বির","মোবারক"];
+const DEFAULT_CURRENCY = "৳";
+const PALETTE = ['#34D399','#FFB454','#60A5FA','#F472B6','#A78BFA','#FB923C','#4ADE80','#F87171'];
+
+const DEFAULT_CATEGORIES_SEED = [
+  {id:'grocery', icon:'🛒', label:'মুদি/বাজার', budget:0},
+  {id:'gas',     icon:'🔥', label:'গ্যাস', budget:0},
+  {id:'utility', icon:'💡', label:'ইউটিলিটি', budget:0},
+  {id:'clean',   icon:'🧼', label:'পরিষ্কার', budget:0},
+  {id:'other',   icon:'📦', label:'অন্যান্য', budget:0},
+];
+const ICON_PRESETS = ['🛒','🔥','💡','🧼','📦','💳','🏠','🚗','🍽️','📱','💊','✈️','🎓','🎁','⚽','📶','💧','🧾'];
+function parseCategories(str){
+  if(!str) return DEFAULT_CATEGORIES_SEED.map(c=>({...c}));
+  const list = str.split('|').filter(Boolean).map(entry=>{
+    const parts = entry.split('~');
+    return {id:parts[0], icon:parts[1]||'📦', label:parts[2]||parts[0], budget:parseFloat(parts[3])||0};
+  });
+  return list.length ? list : DEFAULT_CATEGORIES_SEED.map(c=>({...c}));
+}
+function stringifyCategories(list){
+  return list.map(c=> c.id+'~'+c.icon+'~'+c.label+'~'+(c.budget||0)).join('|');
+}
+
+const STRINGS = {
+  bn:{ myAccounts:'আমার হিসাবসমূহ', createAccount:'+ নতুন হিসাব তৈরি করুন', accountName:'হিসাবের নাম',
+    accountNamePh:'যেমন: শিব্বির-মোবারক মেস', accountType:'ধরন', typeShared:'শেয়ার্ড হিসাব', typeSharedSub:'একাধিক জনের ভাগাভাগি',
+    typePersonal:'ব্যক্তিগত হিসাব', typePersonalSub:'শুধু নিজের খরচ ট্র্যাক', createBtn:'তৈরি করুন', backToAccounts:'← হিসাব পরিবর্তন',
+    owner:'Owner', coeditor:'সহ-সম্পাদক', viewer:'ভিউয়ার', editorMode:'এডিটর মোড', viewerMode:'দর্শক মোড (শুধু দেখা যাবে)', signOut:'সাইন আউট',
+    signInTitle:'Google দিয়ে সাইন-ইন করুন', signInSub:'নিজের হিসাব তৈরি করুন বা কারো হিসাবে যোগ দিন', signInBtn:'Google দিয়ে সাইন-ইন করুন',
+    navHome:'হোম', navList:'সব খরচ', navHistory:'হিস্ট্রি', navAnalysis:'বিশ্লেষণ', navSettings:'সেটিংস',
+    totalLabel:'মোট', perShare:'ভাগ অনুযায়ী', balanceEven:'হিসাব সমান — কেউ কাউকে দেবে না',
+    totalIncome:'মোট আয়', totalExpenseWord:'মোট খরচ', currentBalance:'বর্তমান ব্যালেন্স', kindExpense:'খরচ', kindIncome:'আয়', entryKind:'ধরন',
+    recentEntries:'সাম্প্রতিক এন্ট্রি', noEntries:'এখনো কোনো খরচ যোগ হয়নি', noEntriesSub:'নিচের + বাটনে চেপে শুরু করুন',
+    clearMonth:'🗑️ মাস ক্লিয়ার করে আর্কাইভ করুন', allExpenses:'সব খরচ', noEntry:'কোনো এন্ট্রি নেই',
+    monthlyArchive:'মাসিক আর্কাইভ', noArchive:'এখনো কোনো মাস আর্কাইভ হয়নি', settled:'✓ পরিশোধ সম্পন্ন', unsettled:'বাকি আছে',
+    totalExpenseLbl:'মোট খরচ', markSettled:'✅ পরিশোধ সম্পন্ন হিসেবে চিহ্নিত করুন', unmarkSettled:'↩️ পরিশোধ বাতিল করুন',
+    addTitle:'নতুন খরচ যোগ করুন', editTitle:'খরচ এডিট করুন', descLabel:'বিবরণ', descPh:'যেমন: বাজার, গ্যাস, বিল...',
+    payerLabel:'পরিশোধকারী', categoryLabel:'ক্যাটাগরি', amountLabel:'টাকার পরিমাণ', dateLabel:'তারিখ',
+    receiptLabel:'রসিদের ছবি (ঐচ্ছিক)', removePhoto:'ছবি সরান', addBtn:'যোগ করুন', updateBtn:'আপডেট করুন', cancelBtn:'বাতিল',
+    settingsTitle:'⚙️ সেটিংস', languageLabel:'ভাষা', currencyLabel:'মুদ্রা', payerNamesLabel:'পরিশোধকারী ও শেয়ার %',
+    themeLabel:'থিম', themeSystem:'সিস্টেম', themeDark:'ডার্ক', themeLight:'লাইট',
+    addPayerPh:'নতুন নাম', viewersLabel:'ভিউয়ার (শুধু দেখতে পারবে)', coEditorsLabel:'সহ-সম্পাদক (এন্ট্রি করতে পারবে)', noViewers:'কেউ যোগ করা নেই',
+    addViewerPh:'নতুন Gmail', closeBtn:'বন্ধ করুন', analysisTitle:'📊 ক্যাটাগরি অনুযায়ী খরচ',
+    ownerOnlyNote:'শুধু Owner এই সেটিংস বদলাতে পারবে', addBtnShort:'যোগ করুন', pctSumWarn:'⚠️ মোট অবশ্যই ১০০% হতে হবে',
+    savePct:'শেয়ার % সেভ করুন', deleteAccount:'🗑️ এই হিসাব ডিলিট করুন',
+    confirmDeleteExpense:'এই এন্ট্রিটা মুছে ফেলতে চান? এটা ফেরত আনা যাবে না।', confirmDeleteAccount:'এই পুরো হিসাবটা (সব এন্ট্রি ও হিস্ট্রিসহ) স্থায়ীভাবে মুছে যাবে। নিশ্চিত?',
+    confirmClearMonth:'বর্তমান মাসের সব এন্ট্রি আর্কাইভ হয়ে খালি হয়ে যাবে। নিশ্চিত?', confirmYes:'হ্যাঁ, মুছে ফেলুন',
+    searchAccountsPh:'হিসাবের নাম বা যেকোনো এন্ট্রি খুঁজুন...', searchExpensePh:'বিবরণ দিয়ে খুঁজুন...', allCategories:'সব ক্যাটাগরি',
+    filterBtn:'ফিল্টার', filterTitle:'🎚️ ফিল্টার', selectAllBtn:'সব বাছাই', clearAllBtn:'সব বাদ', applyBtn:'প্রয়োগ করুন', filterByPayer:'পরিশোধকারী অনুযায়ী', filterByCategory:'ক্যাটাগরি অনুযায়ী',
+    manageCategories:'ক্যাটাগরি ম্যানেজ করুন', addCategory:'নতুন ক্যাটাগরি', categoryNamePh:'ক্যাটাগরির নাম',
+    budgetLabel:'বাজেট', budgetPh:'বাজেট (ঐচ্ছিক)', budgetExceeded:'⚠️ বাজেট ছাড়িয়ে গেছে', reminderMsg:'এই হিসাব বেশ কিছুদিন ক্লিয়ার হয়নি — মাস ক্লিয়ার করে দেখতে চান?', dismissBtn:'বাতিল',
+    coverIconLabel:'আইকন', coverColorLabel:'রঙ', defaultTabLabel:'ডিফল্ট ট্যাব', sortOrderLabel:'সাজানোর ক্রম', newestFirst:'নতুন আগে', oldestFirst:'পুরনো আগে',
+    pinLabel:'অ্যাপ লক (PIN)', pinSetPh:'৪ সংখ্যার PIN দিন', pinEnable:'PIN চালু করুন', pinDisable:'PIN বন্ধ করুন', pinEnterTitle:'PIN দিন', pinWrong:'ভুল PIN', unlockBtn:'আনলক',
+    hubConfig:'কনফিগারেশন', hubMembers:'সদস্য', hubAppearance:'ধরন ও রঙ', hubPasscode:'পাসকোড', hubBackup:'ব্যাকআপ', hubHelp:'সাহায্য', hubFeedback:'মতামত', hubRecommend:'শেয়ার করুন', hubBack:'← হাবে ফিরুন',
+    backupExport:'📤 ডেটা এক্সপোর্ট করুন (JSON)', backupImport:'📥 ব্যাকআপ থেকে রিস্টোর করুন', backupImportConfirm:'এটা বর্তমান সব ডেটা মুছে ব্যাকআপ দিয়ে বদলে দেবে। নিশ্চিত?',
+    helpText:'যেকোনো সমস্যায় এই চ্যাটেই ফিরে এসে জানান।', feedbackText:'আপনার মতামত/সমস্যা লিখে পাঠান।', recommendText:'অ্যাপের লিংক কপি করুন ও বন্ধুদের পাঠান।', linkCopied:'লিংক কপি হয়েছে ✓',
+    duplicateAccount:'📋 এই হিসাব কপি করে নতুন বানান', activityLog:'কার্যক্রমের ইতিহাস', noActivity:'কোনো কার্যক্রম নেই',
+    recurringLabel:'পুনরাবৃত্ত (প্রতি মাসে অটো যোগ হবে)', manageRecurring:'পুনরাবৃত্ত এন্ট্রি ম্যানেজ করুন', businessMode:'ব্যবসার হিসাব (আয়+খরচ)',
+    editBtn:'এডিট', saveBtn:'সেভ', noResults:'কোনো ফলাফল পাওয়া যায়নি',
+  },
+  en:{ myAccounts:'My accounts', createAccount:'+ Create new account', accountName:'Account name',
+    accountNamePh:'e.g. Shibbir-Mobarak Mess', accountType:'Type', typeShared:'Shared account', typeSharedSub:'Split between multiple people',
+    typePersonal:'Personal account', typePersonalSub:'Track your own spending only', createBtn:'Create', backToAccounts:'← Switch account',
+    owner:'Owner', coeditor:'Co-editor', viewer:'Viewer', editorMode:'Editor mode', viewerMode:'Viewer mode (read-only)', signOut:'Sign out',
+    signInTitle:'Sign in with Google', signInSub:'Create your own account or join an existing one', signInBtn:'Sign in with Google',
+    navHome:'Home', navList:'All expenses', navHistory:'History', navAnalysis:'Analysis', navSettings:'Settings',
+    totalLabel:'Total', perShare:'By share', balanceEven:'All settled — nobody owes anybody',
+    totalIncome:'Total income', totalExpenseWord:'Total expense', currentBalance:'Current balance', kindExpense:'Expense', kindIncome:'Income', entryKind:'Type',
+    recentEntries:'Recent entries', noEntries:'No expenses yet', noEntriesSub:'Tap the + button below to start',
+    clearMonth:'🗑️ Clear month & archive', allExpenses:'All expenses', noEntry:'No entries',
+    monthlyArchive:'Monthly archive', noArchive:'No month archived yet', settled:'✓ Settled', unsettled:'Pending',
+    totalExpenseLbl:'Total expense', markSettled:'✅ Mark as settled', unmarkSettled:'↩️ Unmark settled',
+    addTitle:'Add new expense', editTitle:'Edit expense', descLabel:'Description', descPh:'e.g. groceries, gas, bill...',
+    payerLabel:'Paid by', categoryLabel:'Category', amountLabel:'Amount', dateLabel:'Date',
+    receiptLabel:'Receipt photo (optional)', removePhoto:'Remove photo', addBtn:'Add', updateBtn:'Update', cancelBtn:'Cancel',
+    settingsTitle:'⚙️ Settings', languageLabel:'Language', currencyLabel:'Currency', payerNamesLabel:'Payers and share %',
+    themeLabel:'Theme', themeSystem:'System', themeDark:'Dark', themeLight:'Light',
+    addPayerPh:'New name', viewersLabel:'Viewers (read-only)', coEditorsLabel:'Co-editors (can add entries)', noViewers:'None added',
+    addViewerPh:'New Gmail', closeBtn:'Close', analysisTitle:'📊 Spending by category',
+    ownerOnlyNote:'Only the Owner can change these settings', addBtnShort:'Add', pctSumWarn:'⚠️ Total must equal 100%',
+    savePct:'Save share %', deleteAccount:'🗑️ Delete this account',
+    confirmDeleteExpense:'Delete this entry? This cannot be undone.', confirmDeleteAccount:'This whole account (all entries & history) will be permanently deleted. Are you sure?',
+    confirmClearMonth:'All current entries will be archived and cleared. Are you sure?', confirmYes:'Yes, delete',
+    searchAccountsPh:'Search account name or any entry...', searchExpensePh:'Search description...', allCategories:'All categories',
+    filterBtn:'Filter', filterTitle:'🎚️ Filter', selectAllBtn:'Select all', clearAllBtn:'Clear all', applyBtn:'Apply', filterByPayer:'By payer', filterByCategory:'By category',
+    manageCategories:'Manage categories', addCategory:'New category', categoryNamePh:'Category name',
+    budgetLabel:'Budget', budgetPh:'Budget (optional)', budgetExceeded:'⚠️ Over budget', reminderMsg:'This account has not been cleared in a while — clear the month now?', dismissBtn:'Dismiss',
+    coverIconLabel:'Icon', coverColorLabel:'Color', defaultTabLabel:'Default tab', sortOrderLabel:'Sort order', newestFirst:'Newest first', oldestFirst:'Oldest first',
+    pinLabel:'App lock (PIN)', pinSetPh:'Enter a 4-digit PIN', pinEnable:'Enable PIN', pinDisable:'Disable PIN', pinEnterTitle:'Enter PIN', pinWrong:'Wrong PIN', unlockBtn:'Unlock',
+    hubConfig:'Configuration', hubMembers:'Members', hubAppearance:'Style & currency', hubPasscode:'Passcode', hubBackup:'Backup', hubHelp:'Help', hubFeedback:'Feedback', hubRecommend:'Share app', hubBack:'← Back to hub',
+    backupExport:'📤 Export data (JSON)', backupImport:'📥 Restore from backup', backupImportConfirm:'This will erase current data and replace it with the backup. Are you sure?',
+    helpText:'For any issue, come back to this chat and let me know.', feedbackText:'Send your feedback or issue.', recommendText:'Copy the app link and share with friends.', linkCopied:'Link copied ✓',
+    duplicateAccount:'📋 Duplicate this account', activityLog:'Activity log', noActivity:'No activity yet',
+    recurringLabel:'Recurring (auto-added monthly)', manageRecurring:'Manage recurring entries', businessMode:'Business account (income+expense)',
+    editBtn:'Edit', saveBtn:'Save', noResults:'No results found',
+  },
+  ar:{ myAccounts:'حساباتي', createAccount:'+ إنشاء حساب جديد', accountName:'اسم الحساب',
+    accountNamePh:'مثال: مس شبير-مبارك', accountType:'النوع', typeShared:'حساب مشترك', typeSharedSub:'مقسوم بين عدة أشخاص',
+    typePersonal:'حساب شخصي', typePersonalSub:'تتبع مصاريفك فقط', createBtn:'إنشاء', backToAccounts:'← تبديل الحساب',
+    owner:'المالك', coeditor:'محرر مشارك', viewer:'مشاهد', editorMode:'وضع المحرر', viewerMode:'وضع المشاهدة فقط', signOut:'تسجيل الخروج',
+    signInTitle:'تسجيل الدخول عبر Google', signInSub:'أنشئ حسابك أو انضم لحساب شخص آخر', signInBtn:'تسجيل الدخول عبر Google',
+    navHome:'الرئيسية', navList:'كل المصاريف', navHistory:'السجل', navAnalysis:'تحليل', navSettings:'الإعدادات',
+    totalLabel:'الإجمالي', perShare:'حسب الحصة', balanceEven:'الحساب متساوٍ',
+    totalIncome:'إجمالي الدخل', totalExpenseWord:'إجمالي المصروف', currentBalance:'الرصيد الحالي', kindExpense:'مصروف', kindIncome:'دخل', entryKind:'النوع',
+    recentEntries:'أحدث الإدخالات', noEntries:'لا توجد مصاريف بعد', noEntriesSub:'اضغط على + بالأسفل للبدء',
+    clearMonth:'🗑️ إغلاق الشهر وأرشفته', allExpenses:'كل المصاريف', noEntry:'لا توجد إدخالات',
+    monthlyArchive:'الأرشيف الشهري', noArchive:'لا يوجد شهر مؤرشف بعد', settled:'✓ تمت التسوية', unsettled:'معلّق',
+    totalExpenseLbl:'إجمالي المصروف', markSettled:'✅ تحديد كمسدد', unmarkSettled:'↩️ إلغاء التسوية',
+    addTitle:'إضافة مصروف جديد', editTitle:'تعديل المصروف', descLabel:'الوصف', descPh:'مثال: بقالة، غاز...',
+    payerLabel:'من دفع', categoryLabel:'التصنيف', amountLabel:'المبلغ', dateLabel:'التاريخ',
+    receiptLabel:'صورة الإيصال (اختياري)', removePhoto:'إزالة الصورة', addBtn:'إضافة', updateBtn:'تحديث', cancelBtn:'إلغاء',
+    settingsTitle:'⚙️ الإعدادات', languageLabel:'اللغة', currencyLabel:'العملة', payerNamesLabel:'الدافعون ونسبة الحصة',
+    themeLabel:'المظهر', themeSystem:'النظام', themeDark:'داكن', themeLight:'فاتح',
+    addPayerPh:'اسم جديد', viewersLabel:'المشاهدون', coEditorsLabel:'المحررون المشاركون', noViewers:'لم تتم الإضافة',
+    addViewerPh:'Gmail جديد', closeBtn:'إغلاق', analysisTitle:'📊 حسب التصنيف',
+    ownerOnlyNote:'فقط المالك يمكنه تغيير هذه الإعدادات', addBtnShort:'إضافة', pctSumWarn:'⚠️ يجب أن يساوي المجموع 100%',
+    savePct:'حفظ النسب', deleteAccount:'🗑️ حذف هذا الحساب',
+    confirmDeleteExpense:'حذف هذا الإدخال؟ لا يمكن التراجع عن هذا.', confirmDeleteAccount:'سيتم حذف هذا الحساب بالكامل نهائيًا. هل أنت متأكد؟',
+    confirmClearMonth:'سيتم أرشفة جميع الإدخالات الحالية ومسحها. هل أنت متأكد؟', confirmYes:'نعم، احذف',
+    searchAccountsPh:'ابحث باسم الحساب أو أي إدخال...', searchExpensePh:'ابحث في الوصف...', allCategories:'كل التصنيفات',
+    filterBtn:'تصفية', filterTitle:'🎚️ تصفية', selectAllBtn:'تحديد الكل', clearAllBtn:'إلغاء الكل', applyBtn:'تطبيق', filterByPayer:'حسب الدافع', filterByCategory:'حسب التصنيف',
+    manageCategories:'إدارة التصنيفات', addCategory:'تصنيف جديد', categoryNamePh:'اسم التصنيف',
+    budgetLabel:'الميزانية', budgetPh:'الميزانية (اختياري)', budgetExceeded:'⚠️ تجاوز الميزانية', reminderMsg:'لم يتم إغلاق هذا الحساب منذ فترة — هل تريد إغلاق الشهر الآن؟', dismissBtn:'إغلاق',
+    coverIconLabel:'الأيقونة', coverColorLabel:'اللون', defaultTabLabel:'التبويب الافتراضي', sortOrderLabel:'الترتيب', newestFirst:'الأحدث أولاً', oldestFirst:'الأقدم أولاً',
+    pinLabel:'قفل التطبيق (PIN)', pinSetPh:'أدخل رمز PIN من 4 أرقام', pinEnable:'تفعيل PIN', pinDisable:'إلغاء PIN', pinEnterTitle:'أدخل PIN', pinWrong:'PIN خاطئ', unlockBtn:'فتح',
+    hubConfig:'الإعدادات', hubMembers:'الأعضاء', hubAppearance:'المظهر والعملة', hubPasscode:'رمز المرور', hubBackup:'نسخ احتياطي', hubHelp:'مساعدة', hubFeedback:'ملاحظات', hubRecommend:'مشاركة', hubBack:'← رجوع',
+    backupExport:'📤 تصدير البيانات (JSON)', backupImport:'📥 استعادة من نسخة احتياطية', backupImportConfirm:'سيتم حذف البيانات الحالية واستبدالها بالنسخة الاحتياطية. هل أنت متأكد؟',
+    helpText:'لأي مشكلة، عد إلى هذه المحادثة وأخبرني.', feedbackText:'أرسل ملاحظاتك أو مشكلتك.', recommendText:'انسخ رابط التطبيق وشاركه مع أصدقائك.', linkCopied:'تم نسخ الرابط ✓',
+    duplicateAccount:'📋 نسخ هذا الحساب', activityLog:'سجل النشاط', noActivity:'لا يوجد نشاط',
+    recurringLabel:'متكرر (يُضاف تلقائيًا شهريًا)', manageRecurring:'إدارة الإدخالات المتكررة', businessMode:'حساب تجاري (دخل+مصروف)',
+    editBtn:'تعديل', saveBtn:'حفظ', noResults:'لا توجد نتائج',
+  },
+};
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function fmtDate(d){
+  const dt = new Date(d);
+  const months = ["জানু","ফেব্রু","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্ট","অক্টো","নভে","ডিসে"];
+  return dt.getDate()+" "+months[dt.getMonth()];
+}
+function money(n){ return (Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function parsePct(str, payerNames){
+  const out = {};
+  if(str){
+    str.split('|').filter(Boolean).forEach(pair=>{
+      const [n,p] = pair.split(':');
+      if(n) out[n] = parseFloat(p)||0;
+    });
+  }
+  const eq = payerNames.length>0 ? 100/payerNames.length : 0;
+  payerNames.forEach(n=>{ if(!(n in out)) out[n] = eq; });
+  return out;
+}
+function stringifyPct(obj){
+  return Object.keys(obj).map(n=> n+':'+obj[n]).join('|');
+}
+
+function compressImage(file, cb){
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const maxW = 700;
+      const scale = Math.min(1, maxW/img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width*scale;
+      canvas.height = img.height*scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      cb(canvas.toDataURL('image/jpeg',0.55));
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function computeSettlements(byPayerObj, payerNames, shareObj, total){
+  const cred = payerNames.map(n=>({name:n, diff:(byPayerObj[n]||0)-(total*(shareObj[n]||0)/100)})).filter(b=>b.diff>0.004).sort((a,b)=>b.diff-a.diff);
+  const debt = payerNames.map(n=>({name:n, diff:(byPayerObj[n]||0)-(total*(shareObj[n]||0)/100)})).filter(b=>b.diff<-0.004).sort((a,b)=>a.diff-b.diff);
+  const out = [];
+  let ci=0, di=0;
+  while(ci<cred.length && di<debt.length){
+    const c = cred[ci], d = debt[di];
+    const amt = Math.min(c.diff, -d.diff);
+    if(amt>0.004) out.push({from:d.name, to:c.name, amount:amt});
+    c.diff -= amt; d.diff += amt;
+    if(c.diff<=0.004) ci++;
+    if(d.diff>=-0.004) di++;
+  }
+  return out;
+}
+
+function exportExcel(monthLabel, entries, total){
+  const rows = entries.map(e=>({ 'Date': e.date, 'Category': e.category||'other', 'Description': e.desc, 'Paid by': e.payer||'', 'Amount': e.amount }));
+  rows.push({}); rows.push({'Date':'','Category':'','Description':'TOTAL','Paid by':'','Amount':total});
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Summary');
+  XLSX.writeFile(wb, 'hisab-'+monthLabel.replace(/\s+/g,'-')+'.xlsx');
+}
+function exportPrint(monthLabel, entries, total, currency){
+  const w = window.open('', '_blank');
+  const rows = entries.map(e=> '<tr><td>'+e.date+'</td><td>'+(e.desc)+'</td><td>'+(e.payer||'')+'</td><td style="text-align:right">'+currency+money(e.amount)+'</td></tr>').join('');
+  w.document.write('<html><head><meta charset="utf-8"><title>'+monthLabel+'</title><style>body{font-family:"Noto Sans Bengali",Arial,sans-serif;padding:24px}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #ccc;padding:8px;font-size:13px}</style></head><body><h1>'+monthLabel+'</h1><table><thead><tr><th>Date</th><th>Description</th><th>Paid by</th><th>Amount</th></tr></thead><tbody>'+rows+'</tbody></table><div style="margin-top:16px"><b>Total: '+currency+money(total)+'</b></div><script>window.onload=function(){window.print();}<'+'/script></body></html>');
+  w.document.close();
+}
+
+function exportCSV(monthLabel, entries){
+  const header = 'Date,Category,Description,Paid by,Amount\n';
+  const rows = entries.map(e=> [e.date, (e.category||''), '"'+(e.desc||'').replace(/"/g,'""')+'"', (e.payer||''), e.amount].join(',')).join('\n');
+  const blob = new Blob([header+rows], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'hisab-'+monthLabel.replace(/\s+/g,'-')+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function App(){
+  const [ready,setReady] = useState(window.__firebaseReady || false);
+  const [configured,setConfigured] = useState(window.__firebaseReady || false);
+  const [authChecked,setAuthChecked] = useState(false);
+  const [user,setUser] = useState(null);
+  const [signInError,setSignInError] = useState(null);
+  const [accountsMeta,setAccountsMeta] = useState({});
+  const [metaLoaded,setMetaLoaded] = useState(false);
+  const [currentAccountId,setCurrentAccountId] = useState(null);
+  const [expenses,setExpenses] = useState([]);
+  const [history,setHistory] = useState([]);
+  const [tab,setTab] = useState('home');
+  const [sheetOpen,setSheetOpen] = useState(false);
+  const [settingsOpen,setSettingsOpen] = useState(false);
+  const [createOpen,setCreateOpen] = useState(false);
+  const [viewingPhoto,setViewingPhoto] = useState(null);
+  const [toast,setToast] = useState(null);
+  const [editingId,setEditingId] = useState(null);
+  const [newViewerInput,setNewViewerInput] = useState('');
+  const [newCoEditorInput,setNewCoEditorInput] = useState('');
+  const [newPayerInput,setNewPayerInput] = useState('');
+  const [pctDraft,setPctDraft] = useState(null);
+  const [confirmState,setConfirmState] = useState(null);
+  const [reminderDismissed,setReminderDismissed] = useState(false);
+  const [accountSearch,setAccountSearch] = useState('');
+  const [allExpensesMap,setAllExpensesMap] = useState({});
+  const [expenseSearch,setExpenseSearch] = useState('');
+  const [filterOpen,setFilterOpen] = useState(false);
+  const [hubView,setHubView] = useState('grid');
+  const [pin,setPin] = useState(localStorage.getItem('mh-pin') || '');
+  const [pinLocked,setPinLocked] = useState(!!localStorage.getItem('mh-pin'));
+  const [pinInput,setPinInput] = useState('');
+  const [pinSetupInput,setPinSetupInput] = useState('');
+  const [pinError,setPinError] = useState('');
+  const [categoryFilterSet,setCategoryFilterSet] = useState(null);
+  const [payerFilterSet,setPayerFilterSet] = useState(null);
+  const [catManageOpen,setCatManageOpen] = useState(false);
+  const [newCatIcon,setNewCatIcon] = useState('📦');
+  const [newCatLabel,setNewCatLabel] = useState('');
+  const [newCatBudget,setNewCatBudget] = useState('');
+  const [editingCatId,setEditingCatId] = useState(null);
+  const [newAccForm,setNewAccForm] = useState({name:'', type:'shared', currency:DEFAULT_CURRENCY, payer1:'', payer2:'', coverIcon:'', coverColor:'#FFB454'});
+  const [migrationDone,setMigrationDone] = useState(false);
+  const [lang,setLang] = useState(localStorage.getItem('mh-lang') || 'bn');
+  const [theme,setTheme] = useState(localStorage.getItem('mh-theme') || 'system');
+  const [defaultTab,setDefaultTabState] = useState(localStorage.getItem('mh-defaulttab') || 'home');
+  const [sortOrder,setSortOrderState] = useState(localStorage.getItem('mh-sortorder') || 'newest');
+  const [systemPrefersDark,setSystemPrefersDark] = useState(
+    typeof window!=='undefined' && window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : true
+  );
+  const resolvedTheme = theme==='system' ? (systemPrefersDark?'dark':'light') : theme;
+  const t = (k)=> (STRINGS[lang] && STRINGS[lang][k]) || STRINGS.bn[k] || k;
+  const [form,setForm] = useState({desc:'',payer:'',amount:'',date:todayStr(),category:'other',receipt:null,kind:'expense'});
+
+  function changeLang(l){ setLang(l); localStorage.setItem('mh-lang', l); }
+  function changeTheme(th){ setTheme(th); localStorage.setItem('mh-theme', th); }
+  function setDefaultTab(tb){ setDefaultTabState(tb); localStorage.setItem('mh-defaulttab', tb); }
+  function setSortOrder(so){ setSortOrderState(so); localStorage.setItem('mh-sortorder', so); }
+
+  useEffect(()=>{
+    if(!window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e)=> setSystemPrefersDark(e.matches);
+    if(mq.addEventListener) mq.addEventListener('change', handler);
+    return ()=>{ if(mq.removeEventListener) mq.removeEventListener('change', handler); };
+  },[]);
+
+  useEffect(()=>{
+    document.body.setAttribute('data-theme', resolvedTheme);
+  },[resolvedTheme]);
+
+  useEffect(()=>{
+    function onCheck(){ setConfigured(window.__firebaseReady); setReady(true); }
+    window.addEventListener('firebase-checked', onCheck);
+    if(window.__firebaseReady){ setConfigured(true); setReady(true); }
+    return ()=>window.removeEventListener('firebase-checked', onCheck);
+  },[]);
+
+  useEffect(()=>{
+    if(!configured) return;
+    const unsub = window.__onAuthStateChanged(window.__auth, (u)=>{ setUser(u); setAuthChecked(true); });
+    return unsub;
+  },[configured]);
+
+  useEffect(()=>{
+    if(!configured) return;
+    window.__onValue(window.__ref(window.__db,'accountsMeta'), (snap)=>{
+      setAccountsMeta(snap.val()||{});
+      setMetaLoaded(true);
+    });
+  },[configured]);
+
+  // এক-বার লিগ্যাসি মাইগ্রেশন: পুরনো একক-হিসাব ডেটা থাকলে নতুন কাঠামোয় কপি
+  useEffect(()=>{
+    if(!configured || !authChecked || !user || !metaLoaded || migrationDone) return;
+    if(user.email.toLowerCase() !== LEGACY_OWNER_EMAIL.toLowerCase()) return;
+    const legacyId = 'legacy-mess';
+    if(accountsMeta[legacyId]) { setMigrationDone(true); return; }
+    window.__get(window.__ref(window.__db,'expenses')).then(expSnap=>{
+      const oldExpenses = expSnap.val();
+      if(!oldExpenses){ setMigrationDone(true); return; }
+      window.__get(window.__ref(window.__db,'history')).then(histSnap=>{
+        window.__get(window.__ref(window.__db,'config')).then(cfgSnap=>{
+          const oldCfg = cfgSnap.val() || {};
+          const payers = oldCfg.payerNames ? oldCfg.payerNames.split('|').filter(Boolean) : DEFAULT_PAYERS;
+          const meta = {
+            name: LEGACY_ACCOUNT_NAME, type:'shared',
+            ownerEmail: LEGACY_OWNER_EMAIL.toLowerCase(),
+            coEditorsList: '|' + '|',
+            viewerEmailsList: oldCfg.viewerEmailsList || '|' + '|',
+            payerNames: '|' + payers.join('|') + '|',
+            sharePercents: stringifyPct(parsePct(null, payers)),
+            currency: oldCfg.currency || DEFAULT_CURRENCY
+          };
+          window.__set(window.__ref(window.__db,'accountsMeta/'+legacyId), meta)
+            .then(()=> window.__set(window.__ref(window.__db,'accounts/'+legacyId+'/expenses'), oldExpenses))
+            .then(()=> histSnap.val() ? window.__set(window.__ref(window.__db,'accounts/'+legacyId+'/history'), histSnap.val()) : null)
+            .then(()=>{ showToast('✓ পুরনো ডেটা "'+LEGACY_ACCOUNT_NAME+'" নামে মাইগ্রেট হয়েছে'); setMigrationDone(true); })
+            .catch(err=>{ showToast('⚠️ মাইগ্রেশন ব্যর্থ: '+((err&&err.code)||'')); setMigrationDone(true); });
+        });
+      });
+    }).catch(()=> setMigrationDone(true));
+  },[configured, authChecked, user, metaLoaded, accountsMeta, migrationDone]);
+
+  useEffect(()=>{
+    if(!configured || !currentAccountId) return;
+    const u1 = window.__onValue(window.__ref(window.__db,'accounts/'+currentAccountId+'/expenses'), (snap)=>{
+      const val = snap.val() || {};
+      const list = Object.keys(val).map(k=>({id:k, ...val[k]})).sort((a,b)=> b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+      setExpenses(list);
+    });
+    const u2 = window.__onValue(window.__ref(window.__db,'accounts/'+currentAccountId+'/history'), (snap)=>{
+      const val = snap.val() || {};
+      const list = Object.keys(val).map(k=>({id:k, ...val[k]})).sort((a,b)=> b.id.localeCompare(a.id));
+      setHistory(list);
+    });
+  },[configured, currentAccountId]);
+
+  function showToast(msg){ setToast(msg); const isErr = msg.indexOf('⚠️')===0; setTimeout(()=>setToast(null), isErr?6000:2200); }
+
+  function askConfirm(message, onConfirm){
+    setConfirmState({message, onConfirm});
+  }
+
+  const userEmail = user ? (user.email||'').toLowerCase() : null;
+  const myAccounts = Object.keys(accountsMeta).filter(id=>{
+    const m = accountsMeta[id];
+    if(!m || !userEmail) return false;
+    if((m.ownerEmail||'').toLowerCase()===userEmail) return true;
+    if((m.coEditorsList||'').includes('|'+userEmail+'|')) return true;
+    if((m.viewerEmailsList||'').includes('|'+userEmail+'|')) return true;
+    return false;
+  });
+
+  useEffect(()=>{
+    if(!configured || currentAccountId || myAccounts.length===0) return;
+    myAccounts.forEach(id=>{
+      window.__onValue(window.__ref(window.__db,'accounts/'+id+'/expenses'), (snap)=>{
+        const val = snap.val() || {};
+        const list = Object.keys(val).map(k=>({id:k, ...val[k]}));
+        setAllExpensesMap(prev=>({...prev, [id]: list}));
+      });
+    });
+  },[configured, currentAccountId, JSON.stringify(myAccounts)]);
+  function roleFor(id){
+    const m = accountsMeta[id]; if(!m) return null;
+    if((m.ownerEmail||'').toLowerCase()===userEmail) return 'owner';
+    if((m.coEditorsList||'').includes('|'+userEmail+'|')) return 'coeditor';
+    if((m.viewerEmailsList||'').includes('|'+userEmail+'|')) return 'viewer';
+    return null;
+  }
+
+  const meta = currentAccountId ? accountsMeta[currentAccountId] : null;
+  const payerNames = meta && meta.payerNames ? meta.payerNames.split('|').filter(Boolean) : [];
+  const sharePercents = meta ? parsePct(meta.sharePercents, payerNames) : {};
+  const currency = meta ? meta.currency : DEFAULT_CURRENCY;
+  const isShared = meta ? meta.type==='shared' : true;
+  const categories = meta ? parseCategories(meta.categoriesList) : [];
+  function catById(id){ return categories.find(c=>c.id===id) || {icon:'📦', label:id||'?'}; }
+  const currentRole = currentAccountId ? roleFor(currentAccountId) : null;
+  const isOwner = currentRole==='owner';
+  const isCoEditor = currentRole==='coeditor';
+  const canEdit = isOwner || isCoEditor;
+
+  const colorMap = {};
+  payerNames.forEach((n,i)=> colorMap[n] = PALETTE[i % PALETTE.length]);
+  function colorFor(n){ return colorMap[n] || 'var(--muted)'; }
+
+  function openAccount(id){
+    setCurrentAccountId(id);
+    setTab(localStorage.getItem('mh-defaulttab') || 'home');
+  }
+  function backToAccounts(){ setCurrentAccountId(null); }
+
+  function createAccount(){
+    if(!newAccForm.name.trim()){ showToast('⚠️ '+t('accountName')); return; }
+    const id = uid();
+    const payers = newAccForm.type==='shared'
+      ? [newAccForm.payer1||'Person 1', newAccForm.payer2||'Person 2'].filter(Boolean)
+      : [];
+    const meta = {
+      name:newAccForm.name.trim(), type:newAccForm.type,
+      ownerEmail:userEmail, coEditorsList:'||', viewerEmailsList:'||',
+      payerNames: payers.length ? '|'+payers.join('|')+'|' : '||',
+      sharePercents: stringifyPct(parsePct(null, payers)),
+      currency:newAccForm.currency,
+      categoriesList: stringifyCategories(DEFAULT_CATEGORIES_SEED),
+      coverIcon: newAccForm.coverIcon || (newAccForm.type==='shared'?'🤝':'👤'),
+      coverColor: newAccForm.coverColor || '#FFB454'
+    };
+    window.__set(window.__ref(window.__db,'accountsMeta/'+id), meta)
+      .then(()=>{ showToast('✓'); setCreateOpen(false); setNewAccForm({name:'',type:'shared',currency:DEFAULT_CURRENCY,payer1:'',payer2:'',coverIcon:'',coverColor:'#FFB454'}); openAccount(id); })
+      .catch(err=>showToast('⚠️ '+((err&&err.code)||'')));
+  }
+
+  function deleteAccount(){
+    askConfirm(t('confirmDeleteAccount'), ()=>{
+      window.__set(window.__ref(window.__db,'accountsMeta/'+currentAccountId), null)
+        .then(()=> window.__set(window.__ref(window.__db,'accounts/'+currentAccountId), null))
+        .then(()=>{ showToast('✓'); setSettingsOpen(false); backToAccounts(); })
+        .catch(err=>showToast('⚠️ '+((err&&err.code)||'')));
+    });
+  }
+
+  function openAddSheet(){
+    setEditingId(null);
+    setForm({desc:'',payer:payerNames[0]||'',amount:'',date:todayStr(),category:'other',receipt:null,kind:'expense'});
+    setSheetOpen(true);
+  }
+  function openEditSheet(e){
+    setEditingId(e.id);
+    setForm({desc:e.desc, payer:e.payer||'', amount:String(e.amount), date:e.date, category:e.category||'other', receipt:e.receipt||null, kind:e.kind||'expense'});
+    setSheetOpen(true);
+  }
+
+  function addExpense(){
+    const amt = parseFloat(form.amount);
+    if(!form.desc.trim() || !amt || amt<=0){ showToast('⚠️ '+t('descLabel')); return; }
+    const entry = {date:form.date, desc:form.desc.trim(), amount:amt, category:form.category||'other'};
+    if(isShared) entry.payer = form.payer;
+    if(!isShared) entry.kind = form.kind || 'expense';
+    if(form.receipt) entry.receipt = form.receipt;
+    const id = editingId || uid();
+    window.__set(window.__ref(window.__db,'accounts/'+currentAccountId+'/expenses/'+id), entry)
+      .then(()=> showToast('✓'))
+      .catch(err=> showToast('⚠️ '+((err&&err.code)||'')));
+    setForm({desc:'',payer:form.payer,amount:'',date:todayStr(),category:'other',receipt:null,kind:'expense'});
+    setEditingId(null);
+    setSheetOpen(false);
+  }
+
+  function deleteExpense(id){
+    askConfirm(t('confirmDeleteExpense'), ()=>{
+      window.__remove(window.__ref(window.__db,'accounts/'+currentAccountId+'/expenses/'+id))
+        .then(()=>showToast('✓')).catch(err=>showToast('⚠️ '+((err&&err.code)||'')));
+    });
+  }
+
+  function clearMonth(){
+    if(expenses.length===0) return;
+    askConfirm(t('confirmClearMonth'), ()=>{
+      const total = expenses.reduce((s,e)=>s+e.amount,0);
+      const byPayer = {};
+      payerNames.forEach(n=> byPayer[n] = expenses.filter(e=>e.payer===n).reduce((s,e)=>s+e.amount,0));
+      const totalIncome = expenses.filter(e=>e.kind==='income').reduce((s,e)=>s+e.amount,0);
+      const totalExpenseAmt = expenses.filter(e=>e.kind!=='income').reduce((s,e)=>s+e.amount,0);
+      const now = new Date();
+      const monthLabel = now.toLocaleDateString(lang==='ar'?'ar':lang==='en'?'en-US':'bn-BD',{month:'long',year:'numeric'});
+      const id = uid();
+      const block = { month: monthLabel, entries: expenses, total, byPayer, totalIncome, totalExpense:totalExpenseAmt, settled:false };
+      window.__set(window.__ref(window.__db,'accounts/'+currentAccountId+'/history/'+id), block)
+        .then(()=> window.__set(window.__ref(window.__db,'accounts/'+currentAccountId+'/expenses'), null))
+        .then(()=>{ showToast('✓'); setTab('history'); })
+        .catch(err=>showToast('⚠️ '+((err&&err.code)||'')));
+    });
+  }
+
+  function toggleSettled(h){
+    window.__update(window.__ref(window.__db,'accounts/'+currentAccountId+'/history/'+h.id), {settled: !h.settled})
+      .catch(err=>showToast('⚠️ '+((err&&err.code)||'')));
+  }
+
+  function saveMeta(patch){
+    window.__update(window.__ref(window.__db,'accountsMeta/'+currentAccountId), patch)
+      .then(()=>showToast('✓')).catch(err=>showToast('⚠️ '+((err&&err.code)||'')));
+  }
+  function saveViewerList(newList){
+    const cleaned = newList.map(e=>e.trim().toLowerCase()).filter(Boolean);
+    saveMeta({viewerEmailsList: '|'+cleaned.join('|')+(cleaned.length?'|':'')});
+  }
+  function saveCoEditorList(newList){
+    const cleaned = newList.map(e=>e.trim().toLowerCase()).filter(Boolean);
+    saveMeta({coEditorsList: '|'+cleaned.join('|')+(cleaned.length?'|':'')});
+  }
+  function savePayerNames(newList){
+    const cleaned = newList.map(e=>e.trim()).filter(Boolean);
+    if(cleaned.length===0) return;
+    const newShare = parsePct(null, cleaned);
+    saveMeta({payerNames:'|'+cleaned.join('|')+'|', sharePercents: stringifyPct(newShare)});
+  }
+  function saveCategoryList(newList){
+    saveMeta({categoriesList: stringifyCategories(newList)});
+  }
+
+  function enablePin(){
+    if(pinSetupInput.length!==4){ showToast('⚠️ 4-digit'); return; }
+    localStorage.setItem('mh-pin', pinSetupInput);
+    setPin(pinSetupInput);
+    setPinSetupInput('');
+    showToast('✓');
+  }
+  function disablePin(){
+    localStorage.removeItem('mh-pin');
+    setPin('');
+    showToast('✓');
+  }
+
+  function exportBackup(){
+    const data = { meta, expenses, history };
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'backup-'+(meta.name||'account').replace(/\s+/g,'-')+'.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  function importBackup(file){
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{
+        const data = JSON.parse(ev.target.result);
+        askConfirm(t('backupImportConfirm'), ()=>{
+          const proms = [];
+          if(data.meta) proms.push(window.__set(window.__ref(window.__db,'accountsMeta/'+currentAccountId), data.meta));
+          proms.push(window.__set(window.__ref(window.__db,'accounts/'+currentAccountId+'/expenses'), null));
+          proms.push(window.__set(window.__ref(window.__db,'accounts/'+currentAccountId+'/history'), null));
+          Promise.all(proms).then(()=>{
+            const rebuilt = {};
+            (data.expenses||[]).forEach(e=>{ const {id,...rest} = e; rebuilt[id||uid()] = rest; });
+            const rebuiltHist = {};
+            (data.history||[]).forEach(h=>{ const {id,...rest} = h; rebuiltHist[id||uid()] = rest; });
+            Promise.all([
+              window.__set(window.__ref(window.__db,'accounts/'+currentAccountId+'/expenses'), Object.keys(rebuilt).length?rebuilt:null),
+              window.__set(window.__ref(window.__db,'accounts/'+currentAccountId+'/history'), Object.keys(rebuiltHist).length?rebuiltHist:null)
+            ]).then(()=>showToast('✓')).catch(err=>showToast('⚠️ '+((err&&err.code)||'')));
+          });
+        });
+      }catch(err){ showToast('⚠️ invalid file'); }
+    };
+    reader.readAsText(file);
+  }
+
+  if(!ready){ return <div className="app"><div className="loading-screen"><img className="loading-logo" src="icon-512.png"/></div></div>; }
+
+  if(!configured){
+    return (
+      <div className="app">
+        <div className="topbar"><div className="brand"><img src="icon-192.png"/><h1>হিসাব</h1></div></div>
+        <div className="setup-warning" style={{margin:16}}>
+          <b>⚠️ Firebase এখনো সেটআপ হয়নি।</b><br/><br/>
+          index.html ফাইলে <code>FIREBASE_CONFIG</code> অংশে নিজের Firebase প্রজেক্টের তথ্য বসান।
+        </div>
+      </div>
+    );
+  }
+
+  if(!authChecked){ return <div className="app"><div className="loading-screen"><img className="loading-logo" src="icon-512.png"/></div></div>; }
+
+  if(!user){
+    return (
+      <div className="app">
+        <div className="topbar"><div className="brand"><img src="icon-192.png"/><h1>হিসাব</h1></div></div>
+        <div className="content" style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'70vh'}}>
+          <div className="card" style={{textAlign:'center'}}>
+            <div style={{fontSize:40,marginBottom:10}}>🔐</div>
+            <div style={{fontWeight:700,fontSize:16,marginBottom:6}}>{t('signInTitle')}</div>
+            <div style={{color:'var(--muted)',fontSize:13,marginBottom:18}}>{t('signInSub')}</div>
+            <button className="btn-primary" onClick={()=>{
+              setSignInError(null);
+              try{
+                const p = window.__signIn();
+                if(p && p.catch) p.catch(err=>setSignInError((err&&err.code)||'error'));
+              }catch(err){ setSignInError((err&&err.code)||'error'); }
+            }}>{t('signInBtn')}</button>
+            {signInError && <div style={{color:'#FF6B6B',fontSize:12.5,marginTop:10}}>⚠️ {signInError}</div>}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if(pinLocked){
+    return (
+      <div className="app">
+        <div className="topbar"><div className="brand"><img src="icon-192.png"/><h1>হিসাব</h1></div></div>
+        <div className="content" style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'70vh'}}>
+          <div className="card" style={{textAlign:'center'}}>
+            <div style={{fontSize:40,marginBottom:10}}>🔒</div>
+            <div style={{fontWeight:700,fontSize:16,marginBottom:14}}>{t('pinEnterTitle')}</div>
+            <input type="password" inputMode="numeric" maxLength="4" value={pinInput} autoFocus
+              onChange={e=>{ setPinInput(e.target.value); setPinError(''); }}
+              style={{width:'100%',textAlign:'center',fontSize:22,letterSpacing:8,background:'var(--surface)',border:'1px solid var(--border)',color:'var(--text)',borderRadius:12,padding:'12px'}}/>
+            {pinError && <div style={{color:'var(--debt)',fontSize:12.5,marginTop:10}}>{t('pinWrong')}</div>}
+            <button className="btn-primary" onClick={()=>{
+              if(pinInput===pin){ setPinLocked(false); setPinInput(''); }
+              else { setPinError(t('pinWrong')); setPinInput(''); }
+            }}>{t('unlockBtn')}</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ============ Account selector screen ============
+  if(!currentAccountId){
+    return (
+      <div className="app" dir={lang==='ar'?'rtl':'ltr'}>
+        <div className="topbar">
+          <div className="brandrow">
+            <div className="brand"><img src="icon-192.png"/><h1>{t('myAccounts')}</h1></div>
+          </div>
+          <div className="sub">{user.email}</div>
+        </div>
+        <div className="content" style={{paddingBottom:100}}>
+          {!metaLoaded && <div className="empty">…</div>}
+          {metaLoaded && myAccounts.length>0 && (
+            <div className="field">
+              <input value={accountSearch} onChange={e=>setAccountSearch(e.target.value)} placeholder={t('searchAccountsPh')}/>
+            </div>
+          )}
+          {metaLoaded && myAccounts.length===0 && (
+            <div className="empty"><div className="big">📂</div>{t('noEntries')}</div>
+          )}
+
+          {(() => {
+            const q = accountSearch.trim().toLowerCase();
+            const matchedAccounts = myAccounts.filter(id=> (accountsMeta[id].name||'').toLowerCase().includes(q));
+            const matchedEntries = q==='' ? [] : myAccounts.flatMap(id=>{
+              const m = accountsMeta[id];
+              const list = allExpensesMap[id]||[];
+              return list.filter(e=> (e.desc||'').toLowerCase().includes(q))
+                .map(e=>({...e, accountId:id, accountName:m.name, accountCurrency:m.currency||DEFAULT_CURRENCY}));
+            });
+
+            if(myAccounts.length>0 && q!=='' && matchedAccounts.length===0 && matchedEntries.length===0){
+              return <div className="empty"><div className="big">🔍</div>{t('noResults')}</div>;
+            }
+
+            return (
+              <>
+                {matchedAccounts.map(id=>{
+                  const m = accountsMeta[id];
+                  const role = roleFor(id);
+                  const roleLabel = role==='owner'?t('owner'):role==='coeditor'?t('coeditor'):t('viewer');
+                  const roleColor = role==='owner'?'#34D399':role==='coeditor'?'#60A5FA':'var(--muted)';
+                  return (
+                    <div className="acct-card" key={id} onClick={()=>openAccount(id)}>
+                      <div className="aic" style={{background: (m.coverColor||(m.type==='shared'?'#FFB454':'#60A5FA'))+'22'}}>{m.coverIcon || (m.type==='shared'?'🤝':'👤')}</div>
+                      <div className="ainfo">
+                        <div className="aname">{m.name}</div>
+                        <div className="arole">{m.type==='shared'?t('typeShared'):t('typePersonal')}</div>
+                      </div>
+                      <span className="role-badge" style={{background:roleColor+'22', color:roleColor}}>{roleLabel}</span>
+                    </div>
+                  );
+                })}
+
+                {matchedEntries.length>0 && (
+                  <div className="card" style={{padding:'6px 12px'}}>
+                    {matchedEntries.map(e=>(
+                      <div className="entry" key={e.accountId+'-'+e.id} onClick={()=>openAccount(e.accountId)} style={{cursor:'pointer'}}>
+                        <div className="avatar" style={{background:'#8FA39D22', color:'var(--muted)'}}>{(e.accountName||'?')[0]}</div>
+                        <div className="info">
+                          <div className="desc">{e.desc}</div>
+                          <div className="meta">{e.accountName} · {fmtDate(e.date)}</div>
+                        </div>
+                        <div className="amt">{e.accountCurrency}{money(e.amount)}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            );
+          })()}
+
+          <button className="btn-primary" onClick={()=>setCreateOpen(true)}>{t('createAccount')}</button>
+        </div>
+
+        <button className="fab-settings" onClick={()=>{setHubView('grid'); setSettingsOpen(true);}}>⚙️</button>
+
+        {settingsOpen && (
+          <div className="sheet-overlay" onClick={(e)=>{if(e.target===e.currentTarget) setSettingsOpen(false);}}>
+            <div className="sheet">
+              <div className="sheet-handle"></div>
+
+              {hubView==='grid' && (
+                <>
+                  <h2>{t('settingsTitle')}</h2>
+                  <div className="hub-grid">
+                    <div className="hub-item" onClick={()=>setHubView('config')}>
+                      <div className="hic" style={{background:'rgba(96,165,250,0.15)'}}>⚙️</div>
+                      <div className="hlabel">{t('hubConfig')}</div>
+                    </div>
+                    <div className="hub-item" onClick={()=>setHubView('passcode')}>
+                      <div className="hic" style={{background:'rgba(255,107,107,0.15)'}}>🔒</div>
+                      <div className="hlabel">{t('hubPasscode')}</div>
+                    </div>
+                    <div className="hub-item" onClick={()=>setHubView('help')}>
+                      <div className="hic" style={{background:'rgba(143,163,157,0.15)'}}>❓</div>
+                      <div className="hlabel">{t('hubHelp')}</div>
+                    </div>
+                    <div className="hub-item" onClick={()=>setHubView('feedback')}>
+                      <div className="hic" style={{background:'rgba(96,165,250,0.15)'}}>💌</div>
+                      <div className="hlabel">{t('hubFeedback')}</div>
+                    </div>
+                    <div className="hub-item" onClick={()=>setHubView('recommend')}>
+                      <div className="hic" style={{background:'rgba(52,211,153,0.15)'}}>👍</div>
+                      <div className="hlabel">{t('hubRecommend')}</div>
+                    </div>
+                  </div>
+                  <button className="btn-ghost" onClick={()=>window.__signOut()}>{t('signOut')}</button>
+                  <button className="btn-ghost" onClick={()=>setSettingsOpen(false)}>{t('closeBtn')}</button>
+                </>
+              )}
+
+              {hubView==='config' && (
+                <>
+                  <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                  <h2>{t('hubConfig')}</h2>
+                  <div className="field">
+                    <label>{t('themeLabel')}</label>
+                    <div className="lang-row">
+                      <button className={"lang-btn "+(theme==='system'?'sel':'')} onClick={()=>changeTheme('system')}>⚙️ {t('themeSystem')}</button>
+                      <button className={"lang-btn "+(theme==='dark'?'sel':'')} onClick={()=>changeTheme('dark')}>🌙 {t('themeDark')}</button>
+                      <button className={"lang-btn "+(theme==='light'?'sel':'')} onClick={()=>changeTheme('light')}>☀️ {t('themeLight')}</button>
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label>{t('languageLabel')}</label>
+                    <div className="lang-row">
+                      <button className={"lang-btn "+(lang==='bn'?'sel':'')} onClick={()=>changeLang('bn')}>বাংলা</button>
+                      <button className={"lang-btn "+(lang==='en'?'sel':'')} onClick={()=>changeLang('en')}>English</button>
+                      <button className={"lang-btn "+(lang==='ar'?'sel':'')} onClick={()=>changeLang('ar')}>العربية</button>
+                    </div>
+                  </div>
+                  <button className="btn-ghost" onClick={()=>setHubView('grid')}>{t('closeBtn')}</button>
+                </>
+              )}
+
+              {hubView==='passcode' && (
+                <>
+                  <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                  <h2>{t('hubPasscode')}</h2>
+                  {pin ? (
+                    <div className="field">
+                      <div style={{fontSize:13,color:'var(--muted)',marginBottom:10}}>🔒 PIN active</div>
+                      <button className="btn-ghost" onClick={disablePin}>{t('pinDisable')}</button>
+                    </div>
+                  ) : (
+                    <div className="field">
+                      <label>{t('pinLabel')}</label>
+                      <input type="password" inputMode="numeric" maxLength="4" value={pinSetupInput} onChange={e=>setPinSetupInput(e.target.value)} placeholder={t('pinSetPh')}/>
+                      <button className="btn-primary" onClick={enablePin}>{t('pinEnable')}</button>
+                    </div>
+                  )}
+                  <button className="btn-ghost" onClick={()=>setHubView('grid')}>{t('closeBtn')}</button>
+                </>
+              )}
+
+              {hubView==='help' && (
+                <>
+                  <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                  <h2>{t('hubHelp')}</h2>
+                  <div style={{fontSize:14,color:'var(--muted)',lineHeight:1.6}}>{t('helpText')}</div>
+                  <button className="btn-ghost" onClick={()=>setHubView('grid')}>{t('closeBtn')}</button>
+                </>
+              )}
+
+              {hubView==='feedback' && (
+                <>
+                  <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                  <h2>{t('hubFeedback')}</h2>
+                  <div style={{fontSize:14,color:'var(--muted)',lineHeight:1.6,marginBottom:14}}>{t('feedbackText')}</div>
+                  <a href={"mailto:"+LEGACY_OWNER_EMAIL+"?subject=Hisab%20App%20Feedback"} className="btn-primary" style={{display:'block',textAlign:'center',textDecoration:'none',boxSizing:'border-box'}}>✉️ Email</a>
+                  <button className="btn-ghost" onClick={()=>setHubView('grid')}>{t('closeBtn')}</button>
+                </>
+              )}
+
+              {hubView==='recommend' && (
+                <>
+                  <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                  <h2>{t('hubRecommend')}</h2>
+                  <div style={{fontSize:14,color:'var(--muted)',lineHeight:1.6,marginBottom:14}}>{t('recommendText')}</div>
+                  <button className="btn-primary" onClick={()=>{
+                    const link = window.location.origin + window.location.pathname;
+                    if(navigator.share){ navigator.share({title:'হিসাব', url:link}).catch(()=>{}); }
+                    else { navigator.clipboard.writeText(link).then(()=>showToast(t('linkCopied'))); }
+                  }}>📤 Share</button>
+                  <button className="btn-ghost" onClick={()=>setHubView('grid')}>{t('closeBtn')}</button>
+                </>
+              )}
+
+            </div>
+          </div>
+        )}
+
+        {createOpen && (
+          <div className="sheet-overlay" onClick={(e)=>{if(e.target===e.currentTarget) setCreateOpen(false);}}>
+            <div className="sheet">
+              <div className="sheet-handle"></div>
+              <h2>{t('createAccount')}</h2>
+              <div className="field">
+                <label>{t('accountName')}</label>
+                <input value={newAccForm.name} onChange={e=>setNewAccForm({...newAccForm,name:e.target.value})} placeholder={t('accountNamePh')}/>
+              </div>
+              <div className="field">
+                <label>{t('accountType')}</label>
+                <div className="type-toggle">
+                  <button className={newAccForm.type==='shared'?'sel':''} onClick={()=>setNewAccForm({...newAccForm,type:'shared'})}>
+                    <span className="ticon">🤝</span><span className="tlabel">{t('typeShared')}</span>
+                  </button>
+                  <button className={newAccForm.type==='personal'?'sel':''} onClick={()=>setNewAccForm({...newAccForm,type:'personal'})}>
+                    <span className="ticon">👤</span><span className="tlabel">{t('typePersonal')}</span>
+                  </button>
+                </div>
+              </div>
+              {newAccForm.type==='shared' && (
+                <>
+                  <div className="field"><label>{t('payerLabel')} ১</label><input value={newAccForm.payer1} onChange={e=>setNewAccForm({...newAccForm,payer1:e.target.value})} placeholder="Person 1"/></div>
+                  <div className="field"><label>{t('payerLabel')} ২</label><input value={newAccForm.payer2} onChange={e=>setNewAccForm({...newAccForm,payer2:e.target.value})} placeholder="Person 2"/></div>
+                </>
+              )}
+              <div className="field">
+                <label>{t('currencyLabel')}</label>
+                <div className="chip-row">
+                  {['৳','﷼','$','₹','€'].map(sym=>(
+                    <button key={sym} className="chip" style={newAccForm.currency===sym?{borderColor:'var(--accent)',background:'rgba(52,211,153,0.12)',color:'var(--accent)'}:{}} onClick={()=>setNewAccForm({...newAccForm,currency:sym})}>{sym}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="field">
+                <label>{t('coverIconLabel')}</label>
+                <div className="chip-row">
+                  {['🤝','👤',...ICON_PRESETS].map(ic=>(
+                    <button key={ic} className="chip" style={{padding:'6px 9px',fontSize:16, ...((newAccForm.coverIcon||(newAccForm.type==='shared'?'🤝':'👤'))===ic?{borderColor:'var(--accent)'}:{})}} onClick={()=>setNewAccForm({...newAccForm,coverIcon:ic})}>{ic}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="field">
+                <label>{t('coverColorLabel')}</label>
+                <div className="chip-row">
+                  {PALETTE.map(col=>(
+                    <button key={col} className="chip" style={{padding:'6px 14px', background:col, borderColor: newAccForm.coverColor===col?'var(--text)':col}} onClick={()=>setNewAccForm({...newAccForm,coverColor:col})}></button>
+                  ))}
+                </div>
+              </div>
+              <button className="btn-primary" onClick={createAccount}>{t('createBtn')}</button>
+              <button className="btn-ghost" onClick={()=>setCreateOpen(false)}>{t('cancelBtn')}</button>
+            </div>
+          </div>
+        )}
+        {toast && <div className="toast">{toast}</div>}
+      </div>
+    );
+  }
+
+  // ============ Inside an account ============
+  const sortedExpenses = [...expenses].sort((a,b)=> sortOrder==='oldest'
+    ? (a.date.localeCompare(b.date) || a.id.localeCompare(b.id))
+    : (b.date.localeCompare(a.date) || b.id.localeCompare(a.id)));
+  const total = expenses.reduce((s,e)=>s+e.amount,0);
+  const totalExpenseOnly = expenses.filter(e=>e.kind!=='income').reduce((s,e)=>s+e.amount,0);
+  const totalIncomeOnly = expenses.filter(e=>e.kind==='income').reduce((s,e)=>s+e.amount,0);
+  const personalBalance = totalIncomeOnly - totalExpenseOnly;
+  const byPayer = {};
+  payerNames.forEach(n=> byPayer[n] = expenses.filter(e=>e.payer===n).reduce((s,e)=>s+e.amount,0));
+  const settlements = isShared ? computeSettlements(byPayer, payerNames, sharePercents, total) : [];
+
+  const R=42, C=2*Math.PI*R;
+  let ringOffset = 0;
+  const ringArcs = payerNames.map((n)=>{
+    const amt = byPayer[n]||0;
+    const frac = total>0 ? amt/total : (1/Math.max(payerNames.length,1));
+    const len = C*frac;
+    const arc = {n, len, offset: ringOffset};
+    ringOffset += len;
+    return arc;
+  });
+
+  const byCategory = categories.map(c=>({
+    ...c,
+    amt: expenses.filter(e=>(e.category||'other')===c.id && e.kind!=='income').reduce((sum,e)=>sum+e.amount,0)
+  })).filter(c=>c.amt>0);
+
+  const pctTotal = pctDraft ? Object.values(pctDraft).reduce((s,v)=>s+(parseFloat(v)||0),0) : 100;
+
+  return (
+    <div className="app" dir={lang==='ar'?'rtl':'ltr'}>
+      <div className="topbar">
+        <div className="brandrow">
+          <div className="brand">
+            <button className="back-btn" onClick={backToAccounts}>{lang==='ar'?'›':'‹'}</button>
+            <h1>{meta.coverIcon || (isShared?'🤝':'👤')} {meta.name}</h1>
+          </div>
+        </div>
+        <div className="sub"><span className="synkdot"></span>{canEdit ? t('editorMode') : t('viewerMode')}</div>
+      </div>
+
+      <div className="content">
+        {tab==='home' && (
+          <>
+            {(() => {
+              if(reminderDismissed || expenses.length===0) return null;
+              const oldest = expenses.reduce((min,e)=> e.date<min?e.date:min, expenses[0].date);
+              const daysSince = (Date.now() - new Date(oldest).getTime()) / 86400000;
+              if(daysSince < 35) return null;
+              return (
+                <div className="card" style={{background:'rgba(255,180,84,0.1)',border:'1px solid rgba(255,180,84,0.35)'}}>
+                  <div style={{fontSize:13,marginBottom:10}}>⏰ {t('reminderMsg')}</div>
+                  <div className="btn-row">
+                    {canEdit && <button className="btn-ghost" style={{margin:0}} onClick={()=>{setReminderDismissed(true); clearMonth();}}>{t('clearMonth')}</button>}
+                    <button className="btn-ghost" style={{margin:0}} onClick={()=>setReminderDismissed(true)}>{t('dismissBtn')}</button>
+                  </div>
+                </div>
+              );
+            })()}
+            <div className="card">
+              {isShared ? (
+                <div className="ring-wrap">
+                  <svg width="100" height="100" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r={R} fill="none" stroke="#28353A" strokeWidth="10"/>
+                    {ringArcs.map(a=>(
+                      <circle key={a.n} cx="50" cy="50" r={R} fill="none" stroke={colorFor(a.n)} strokeWidth="10"
+                        strokeDasharray={`${a.len} ${C-a.len}`} strokeDashoffset={-a.offset} strokeLinecap="round"
+                        transform="rotate(-90 50 50)"/>
+                    ))}
+                    <text x="50" y="47" textAnchor="middle" fontSize="11" fill="var(--muted)">{t('totalLabel')}</text>
+                    <text x="50" y="62" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)">{currency}{money(total)}</text>
+                  </svg>
+                  <div className="ring-labels">
+                    {payerNames.map(n=>(
+                      <div className="ring-row" key={n}>
+                        <div className="name"><span className="swatch" style={{background:colorFor(n)}}></span>{n} ({Math.round(sharePercents[n]||0)}%)</div>
+                        <div className="amt">{currency}{money(byPayer[n]||0)}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div style={{display:'flex',gap:10}}>
+                    <div style={{flex:1,textAlign:'center',padding:'10px 6px',background:'rgba(52,211,153,0.1)',borderRadius:12}}>
+                      <div style={{color:'var(--accent)',fontSize:11,fontWeight:600}}>⬆️ {t('totalIncome')}</div>
+                      <div style={{fontSize:16,fontWeight:700,marginTop:4}}>{currency}{money(totalIncomeOnly)}</div>
+                    </div>
+                    <div style={{flex:1,textAlign:'center',padding:'10px 6px',background:'rgba(255,107,107,0.1)',borderRadius:12}}>
+                      <div style={{color:'var(--debt)',fontSize:11,fontWeight:600}}>⬇️ {t('totalExpenseWord')}</div>
+                      <div style={{fontSize:16,fontWeight:700,marginTop:4}}>{currency}{money(totalExpenseOnly)}</div>
+                    </div>
+                  </div>
+                  <div style={{textAlign:'center',marginTop:14}}>
+                    <div style={{color:'var(--muted)',fontSize:12}}>{t('currentBalance')}</div>
+                    <div style={{fontSize:28,fontWeight:700,marginTop:4,color:personalBalance>=0?'var(--accent)':'var(--debt)'}}>{currency}{money(personalBalance)}</div>
+                  </div>
+                </div>
+              )}
+
+              {isShared && settlements.length===0 && (
+                <div className="balance-banner even"><div className="icon">✅</div><div className="txt">{t('balanceEven')}</div></div>
+              )}
+              {isShared && settlements.map((s,i)=>(
+                <div className="balance-banner owe" key={i}><div className="icon">↔️</div><div className="txt">{s.from} → {s.to}: <b>{currency}{money(s.amount)}</b></div></div>
+              ))}
+            </div>
+
+            <div className="section-title">
+              <span>{t('recentEntries')}</span>
+              {expenses.length>0 && (
+                <span style={{display:'flex',gap:10}}>
+                  <button className="icon-btn" style={{fontSize:14}} onClick={()=>exportExcel('current', expenses, total)}>📊</button>
+                  <button className="icon-btn" style={{fontSize:14}} onClick={()=>exportCSV('current', expenses)}>📄</button>
+                  <button className="icon-btn" style={{fontSize:14}} onClick={()=>exportPrint('current', expenses, total, currency)}>🖨️</button>
+                </span>
+              )}
+            </div>
+            <div className="card" style={{padding:'6px 12px'}}>
+              {expenses.length===0 && <div className="empty"><div className="big">🧾</div>{t('noEntries')}<br/>{t('noEntriesSub')}</div>}
+              {sortedExpenses.slice(0,6).map(e=>{
+                const c = catById(e.category||'other');
+                return (
+                  <div className="entry" key={e.id}>
+                    <div className="avatar" style={{background:(colorFor(e.payer)||'var(--muted)')+'22', color:colorFor(e.payer)||'var(--muted)'}}>{isShared ? (e.payer||'?')[0] : c.icon}</div>
+                    <div className="info">
+                      <div className="desc">{c.icon} {e.desc}</div>
+                      <div className="meta">{isShared?(e.payer+' · '):''}{fmtDate(e.date)}</div>
+                    </div>
+                    {e.receipt && <img className="receipt-thumb" src={e.receipt} onClick={()=>setViewingPhoto(e.receipt)}/>}
+                    <div className="amt" style={!isShared?{color: e.kind==='income'?'var(--accent)':'var(--debt)'}:{}}>{!isShared && (e.kind==='income'?'+':'-')}{currency}{money(e.amount)}</div>
+                    {canEdit && <button className="del" onClick={()=>openEditSheet(e)}>✏️</button>}
+                    {canEdit && <button className="del" onClick={()=>deleteExpense(e.id)}>✕</button>}
+                  </div>
+                );
+              })}
+            </div>
+            {canEdit && expenses.length>0 && <button className="btn-ghost" onClick={clearMonth}>{t('clearMonth')}</button>}
+          </>
+        )}
+
+        {tab==='list' && (
+          <>
+            <div className="section-title">
+              <span>{t('allExpenses')} ({expenses.length})</span>
+              <button className="icon-btn" style={{fontSize:14, border:'1px solid var(--border)', borderRadius:10, padding:'6px 10px'}} onClick={()=>setFilterOpen(true)}>🎚️ {t('filterBtn')}</button>
+            </div>
+            <div className="field">
+              <input value={expenseSearch} onChange={e=>setExpenseSearch(e.target.value)} placeholder={t('searchExpensePh')}/>
+            </div>
+            <div className="card" style={{padding:'6px 12px'}}>
+              {(() => {
+                const activeCats = categoryFilterSet || new Set(categories.map(c=>c.id));
+                const activePayers = payerFilterSet || new Set(payerNames);
+                const filtered = sortedExpenses.filter(e=>
+                  activeCats.has(e.category||'other') &&
+                  (!isShared || activePayers.has(e.payer)) &&
+                  (expenseSearch.trim()==='' || e.desc.toLowerCase().includes(expenseSearch.trim().toLowerCase()))
+                );
+                if(expenses.length===0) return <div className="empty"><div className="big">📋</div>{t('noEntry')}</div>;
+                if(filtered.length===0) return <div className="empty"><div className="big">🔍</div>{t('noResults')}</div>;
+                return filtered.map(e=>{
+                const c = catById(e.category||'other');
+                return (
+                  <div className="entry" key={e.id}>
+                    <div className="avatar" style={{background:(colorFor(e.payer)||'var(--muted)')+'22', color:colorFor(e.payer)||'var(--muted)'}}>{isShared ? (e.payer||'?')[0] : c.icon}</div>
+                    <div className="info">
+                      <div className="desc">{c.icon} {e.desc}</div>
+                      <div className="meta">{isShared?(e.payer+' · '):''}{fmtDate(e.date)}</div>
+                    </div>
+                    {e.receipt && <img className="receipt-thumb" src={e.receipt} onClick={()=>setViewingPhoto(e.receipt)}/>}
+                    <div className="amt" style={!isShared?{color: e.kind==='income'?'var(--accent)':'var(--debt)'}:{}}>{!isShared && (e.kind==='income'?'+':'-')}{currency}{money(e.amount)}</div>
+                    {canEdit && <button className="del" onClick={()=>openEditSheet(e)}>✏️</button>}
+                    {canEdit && <button className="del" onClick={()=>deleteExpense(e.id)}>✕</button>}
+                  </div>
+                );
+              });
+              })()}
+            </div>
+          </>
+        )}
+
+        {tab==='analysis' && (
+          <>
+            <div className="section-title">{t('analysisTitle')}</div>
+            <div className="card">
+              {byCategory.length===0 && <div className="empty"><div className="big">📊</div>{t('noEntries')}</div>}
+              {byCategory.length>0 && (() => {
+                const pieTotal = byCategory.reduce((s,c)=>s+c.amt,0);
+                const PR = 60, PC = 2*Math.PI*PR;
+                let off = 0;
+                return (
+                  <div style={{display:'flex',justifyContent:'center',marginBottom:20}}>
+                    <svg width="150" height="150" viewBox="0 0 150 150">
+                      <circle cx="75" cy="75" r={PR} fill="none" stroke="var(--border)" strokeWidth="24"/>
+                      {byCategory.map((c,idx)=>{
+                        const frac = pieTotal>0 ? c.amt/pieTotal : 0;
+                        const len = PC*frac;
+                        const arc = (
+                          <circle key={c.id} cx="75" cy="75" r={PR} fill="none" stroke={PALETTE[idx%PALETTE.length]} strokeWidth="24"
+                            strokeDasharray={`${len} ${PC-len}`} strokeDashoffset={-off}
+                            transform="rotate(-90 75 75)"/>
+                        );
+                        off += len;
+                        return arc;
+                      })}
+                      <text x="75" y="72" textAnchor="middle" fontSize="10" fill="var(--muted)">{t('totalExpenseWord')}</text>
+                      <text x="75" y="88" textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)">{currency}{money(pieTotal)}</text>
+                    </svg>
+                  </div>
+                );
+              })()}
+              {byCategory.map((c,idx)=>{
+                const over = c.budget>0 && c.amt>c.budget;
+                return (
+                <div className="cat-bar-row" key={c.id}>
+                  <div style={{display:'flex',justifyContent:'space-between',fontSize:12.5}}>
+                    <span><span style={{display:'inline-block',width:9,height:9,borderRadius:3,background:PALETTE[idx%PALETTE.length],marginInlineEnd:6}}></span>{c.icon} {c.label}</span>
+                    <span style={{fontWeight:600, color: over?'var(--debt)':'var(--text)'}}>{currency}{money(c.amt)}{c.budget>0 && ' / '+currency+money(c.budget)}</span>
+                  </div>
+                  <div className="cat-bar-track"><div className="cat-bar-fill" style={{width:Math.min(100,(total>0?(c.amt/total*100):0))+'%', background: over?'var(--debt)':PALETTE[idx%PALETTE.length]}}></div></div>
+                  {over && <div style={{color:'var(--debt)',fontSize:11,marginTop:4}}>{t('budgetExceeded')}</div>}
+                </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {tab==='history' && (
+          <>
+            <div className="section-title">{t('monthlyArchive')} ({history.length})</div>
+            {history.length===0 && <div className="card empty"><div className="big">📦</div>{t('noArchive')}</div>}
+            {history.map(h=>(
+              <div className="month-block" key={h.id}>
+                <div className="mtitle">📅 {h.month}<span style={{fontSize:11,color:h.settled?'#34D399':'var(--muted)'}}>{h.settled ? t('settled') : t('unsettled')}</span></div>
+                {isShared ? (
+                  <>
+                    <div className="mstat"><span>{t('totalExpenseLbl')}</span><b style={{color:'var(--text)'}}>{currency}{money(h.total)}</b></div>
+                    {Object.keys(h.byPayer||{}).map(n=>(<div className="mstat" key={n}><span>{n}</span><b style={{color:'var(--text)'}}>{currency}{money(h.byPayer[n]||0)}</b></div>))}
+                  </>
+                ) : (
+                  <>
+                    <div className="mstat"><span>⬆️ {t('totalIncome')}</span><b style={{color:'var(--accent)'}}>{currency}{money(h.totalIncome||0)}</b></div>
+                    <div className="mstat"><span>⬇️ {t('totalExpenseWord')}</span><b style={{color:'var(--debt)'}}>{currency}{money(h.totalExpense!=null?h.totalExpense:h.total)}</b></div>
+                    <div className="mstat"><span>{t('currentBalance')}</span><b style={{color:(h.totalIncome||0)-(h.totalExpense!=null?h.totalExpense:0)>=0?'var(--accent)':'var(--debt)'}}>{currency}{money((h.totalIncome||0)-(h.totalExpense!=null?h.totalExpense:h.total))}</b></div>
+                  </>
+                )}
+                <div className="btn-row" style={{marginTop:10}}>
+                  <button className="btn-ghost" onClick={()=>exportExcel(h.month, h.entries||[], h.total)}>📊 Excel</button>
+                  <button className="btn-ghost" onClick={()=>exportCSV(h.month, h.entries||[])}>📄 CSV</button>
+                  <button className="btn-ghost" onClick={()=>exportPrint(h.month, h.entries||[], h.total, currency)}>🖨️ PDF</button>
+                </div>
+                {canEdit && <button className="btn-ghost" style={{marginTop:8}} onClick={()=>toggleSettled(h)}>{h.settled ? t('unmarkSettled') : t('markSettled')}</button>}
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+
+      {canEdit && <button className="fab" onClick={openAddSheet}>+</button>}
+
+      <div className="bottomnav">
+        <button className={"navbtn "+(tab==='home'?'active':'')} onClick={()=>setTab('home')}><span className="ic">🏠</span>{t('navHome')}</button>
+        <button className={"navbtn "+(tab==='list'?'active':'')} onClick={()=>setTab('list')}><span className="ic">📋</span>{t('navList')}</button>
+        <button className={"navbtn "+(tab==='analysis'?'active':'')} onClick={()=>setTab('analysis')}><span className="ic">📊</span>{t('navAnalysis')}</button>
+        <button className={"navbtn "+(tab==='history'?'active':'')} onClick={()=>setTab('history')}><span className="ic">📦</span>{t('navHistory')}</button>
+        <button className="navbtn" onClick={()=>{setHubView('grid'); setSettingsOpen(true);}}><span className="ic">⚙️</span>{t('navSettings')}</button>
+      </div>
+
+      {sheetOpen && (
+        <div className="sheet-overlay" onClick={(e)=>{if(e.target===e.currentTarget) setSheetOpen(false);}}>
+          <div className="sheet">
+            <div className="sheet-handle"></div>
+            <h2>{editingId ? t('editTitle') : t('addTitle')}</h2>
+            <div className="field">
+              <label>{t('descLabel')}</label>
+              <input type="text" placeholder={t('descPh')} value={form.desc} onChange={e=>setForm({...form,desc:e.target.value})} autoFocus/>
+            </div>
+            {isShared && (
+              <div className="field">
+                <label>{t('payerLabel')}</label>
+                <div className="payer-toggle">
+                  {payerNames.map(n=>(<button key={n} style={form.payer===n?{borderColor:colorFor(n),background:colorFor(n)+'22',color:colorFor(n)}:{}} onClick={()=>setForm({...form,payer:n})}>{n}</button>))}
+                </div>
+              </div>
+            )}
+            {!isShared && (
+              <div className="field">
+                <label>{t('entryKind')}</label>
+                <div className="payer-toggle">
+                  <button style={form.kind==='expense'?{borderColor:'var(--debt)',background:'rgba(255,107,107,0.12)',color:'var(--debt)'}:{}} onClick={()=>setForm({...form,kind:'expense'})}>⬇️ {t('kindExpense')}</button>
+                  <button style={form.kind==='income'?{borderColor:'var(--accent)',background:'rgba(52,211,153,0.12)',color:'var(--accent)'}:{}} onClick={()=>setForm({...form,kind:'income'})}>⬆️ {t('kindIncome')}</button>
+                </div>
+              </div>
+            )}
+            <div className="field">
+              <label>{t('categoryLabel')}</label>
+              <div className="chip-row">
+                {categories.map((c,idx)=>(
+                  <button key={c.id} className="chip" onClick={()=>setForm({...form,category:c.id})}
+                    style={form.category===c.id ? {borderColor:PALETTE[idx%PALETTE.length], background:PALETTE[idx%PALETTE.length]+'22', color:PALETTE[idx%PALETTE.length]} : {}}>
+                    {c.icon} {c.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="field">
+              <label>{t('amountLabel')} ({currency})</label>
+              <input type="number" inputMode="decimal" placeholder="0.00" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})}/>
+            </div>
+            <div className="field">
+              <label>{t('dateLabel')}</label>
+              <input type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/>
+            </div>
+            <div className="field">
+              <label>{t('receiptLabel')}</label>
+              <input type="file" accept="image/*" capture="environment" onChange={e=>{
+                const file = e.target.files[0];
+                if(file) compressImage(file, (dataUrl)=>setForm(f=>({...f,receipt:dataUrl})));
+              }}/>
+              {form.receipt && (
+                <div style={{marginTop:8,display:'flex',alignItems:'center',gap:10}}>
+                  <img src={form.receipt} style={{width:60,height:60,objectFit:'cover',borderRadius:8,border:'1px solid var(--border)'}}/>
+                  <button className="btn-ghost" style={{margin:0,width:'auto',padding:'8px 12px'}} onClick={()=>setForm(f=>({...f,receipt:null}))}>{t('removePhoto')}</button>
+                </div>
+              )}
+            </div>
+            <button className="btn-primary" onClick={addExpense}>{editingId ? t('updateBtn') : t('addBtn')}</button>
+            <button className="btn-ghost" onClick={()=>{setSheetOpen(false); setEditingId(null);}}>{t('cancelBtn')}</button>
+          </div>
+        </div>
+      )}
+
+      {filterOpen && (
+        <div className="sheet-overlay" onClick={(e)=>{if(e.target===e.currentTarget) setFilterOpen(false);}}>
+          <div className="sheet">
+            <div className="sheet-handle"></div>
+            <h2>{t('filterTitle')}</h2>
+
+            {isShared && (
+              <div className="field">
+                <label>{t('filterByPayer')}</label>
+                {payerNames.map(n=>{
+                  const activeSet = payerFilterSet || new Set(payerNames);
+                  const checked = activeSet.has(n);
+                  return (
+                    <div className="viewer-row" key={n} onClick={()=>{
+                      const cur = new Set(payerFilterSet || payerNames);
+                      if(checked) cur.delete(n); else cur.add(n);
+                      setPayerFilterSet(new Set(cur));
+                    }} style={{cursor:'pointer'}}>
+                      <span><input type="checkbox" checked={checked} readOnly style={{marginInlineEnd:10}}/>{n}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="field">
+              <label>{t('filterByCategory')}</label>
+              {categories.map(c=>{
+                const activeSet = categoryFilterSet || new Set(categories.map(cc=>cc.id));
+                const checked = activeSet.has(c.id);
+                return (
+                  <div className="viewer-row" key={c.id} onClick={()=>{
+                    const cur = new Set(categoryFilterSet || categories.map(cc=>cc.id));
+                    if(checked) cur.delete(c.id); else cur.add(c.id);
+                    setCategoryFilterSet(new Set(cur));
+                  }} style={{cursor:'pointer'}}>
+                    <span><input type="checkbox" checked={checked} readOnly style={{marginInlineEnd:10}}/>{c.icon} {c.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="btn-row">
+              <button className="btn-ghost" onClick={()=>{ setCategoryFilterSet(new Set()); setPayerFilterSet(new Set()); }}>{t('clearAllBtn')}</button>
+              <button className="btn-ghost" onClick={()=>{ setCategoryFilterSet(null); setPayerFilterSet(null); }}>{t('selectAllBtn')}</button>
+            </div>
+            <button className="btn-primary" onClick={()=>setFilterOpen(false)}>{t('applyBtn')}</button>
+          </div>
+        </div>
+      )}
+
+      {settingsOpen && (
+        <div className="sheet-overlay" onClick={(e)=>{if(e.target===e.currentTarget) setSettingsOpen(false);}}>
+          <div className="sheet">
+            <div className="sheet-handle"></div>
+
+            {hubView==='grid' && (
+              <>
+                <h2>{t('settingsTitle')}</h2>
+                <div className="hub-grid">
+                  <div className="hub-item" onClick={()=>setHubView('config')}>
+                    <div className="hic" style={{background:'rgba(96,165,250,0.15)'}}>⚙️</div>
+                    <div className="hlabel">{t('hubConfig')}</div>
+                  </div>
+                  {isOwner && (
+                    <div className="hub-item" onClick={()=>setHubView('members')}>
+                      <div className="hic" style={{background:'rgba(52,211,153,0.15)'}}>👥</div>
+                      <div className="hlabel">{t('hubMembers')}</div>
+                    </div>
+                  )}
+                  {isOwner && (
+                    <div className="hub-item" onClick={()=>setHubView('appearance')}>
+                      <div className="hic" style={{background:'rgba(255,180,84,0.15)'}}>🎨</div>
+                      <div className="hlabel">{t('hubAppearance')}</div>
+                    </div>
+                  )}
+                  <div className="hub-item" onClick={()=>setHubView('passcode')}>
+                    <div className="hic" style={{background:'rgba(255,107,107,0.15)'}}>🔒</div>
+                    <div className="hlabel">{t('hubPasscode')}</div>
+                  </div>
+                  <div className="hub-item" onClick={()=>setHubView('backup')}>
+                    <div className="hic" style={{background:'rgba(167,139,250,0.15)'}}>💾</div>
+                    <div className="hlabel">{t('hubBackup')}</div>
+                  </div>
+                  <div className="hub-item" onClick={()=>setHubView('help')}>
+                    <div className="hic" style={{background:'rgba(143,163,157,0.15)'}}>❓</div>
+                    <div className="hlabel">{t('hubHelp')}</div>
+                  </div>
+                  <div className="hub-item" onClick={()=>setHubView('feedback')}>
+                    <div className="hic" style={{background:'rgba(96,165,250,0.15)'}}>💌</div>
+                    <div className="hlabel">{t('hubFeedback')}</div>
+                  </div>
+                  <div className="hub-item" onClick={()=>setHubView('recommend')}>
+                    <div className="hic" style={{background:'rgba(52,211,153,0.15)'}}>👍</div>
+                    <div className="hlabel">{t('hubRecommend')}</div>
+                  </div>
+                </div>
+                <button className="btn-ghost" onClick={backToAccounts}>{t('backToAccounts')}</button>
+                <button className="btn-ghost" onClick={()=>window.__signOut()}>{t('signOut')}</button>
+                <button className="btn-ghost" onClick={()=>setSettingsOpen(false)}>{t('closeBtn')}</button>
+              </>
+            )}
+
+            {hubView==='config' && (
+              <>
+                <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                <h2>{t('hubConfig')}</h2>
+
+                <div className="field">
+                  <label>{t('themeLabel')}</label>
+                  <div className="lang-row">
+                    <button className={"lang-btn "+(theme==='system'?'sel':'')} onClick={()=>changeTheme('system')}>⚙️ {t('themeSystem')}</button>
+                    <button className={"lang-btn "+(theme==='dark'?'sel':'')} onClick={()=>changeTheme('dark')}>🌙 {t('themeDark')}</button>
+                    <button className={"lang-btn "+(theme==='light'?'sel':'')} onClick={()=>changeTheme('light')}>☀️ {t('themeLight')}</button>
+                  </div>
+                </div>
+
+                <div className="field">
+                  <label>{t('languageLabel')}</label>
+                  <div className="lang-row">
+                    <button className={"lang-btn "+(lang==='bn'?'sel':'')} onClick={()=>changeLang('bn')}>বাংলা</button>
+                    <button className={"lang-btn "+(lang==='en'?'sel':'')} onClick={()=>changeLang('en')}>English</button>
+                    <button className={"lang-btn "+(lang==='ar'?'sel':'')} onClick={()=>changeLang('ar')}>العربية</button>
+                  </div>
+                </div>
+
+                <div className="field">
+                  <label>{t('defaultTabLabel')}</label>
+                  <div className="lang-row">
+                    <button className={"lang-btn "+(defaultTab==='home'?'sel':'')} onClick={()=>setDefaultTab('home')}>🏠 {t('navHome')}</button>
+                    <button className={"lang-btn "+(defaultTab==='list'?'sel':'')} onClick={()=>setDefaultTab('list')}>📋 {t('navList')}</button>
+                    <button className={"lang-btn "+(defaultTab==='analysis'?'sel':'')} onClick={()=>setDefaultTab('analysis')}>📊 {t('navAnalysis')}</button>
+                  </div>
+                </div>
+
+                <div className="field">
+                  <label>{t('sortOrderLabel')}</label>
+                  <div className="lang-row">
+                    <button className={"lang-btn "+(sortOrder==='newest'?'sel':'')} onClick={()=>setSortOrder('newest')}>{t('newestFirst')}</button>
+                    <button className={"lang-btn "+(sortOrder==='oldest'?'sel':'')} onClick={()=>setSortOrder('oldest')}>{t('oldestFirst')}</button>
+                  </div>
+                </div>
+                <button className="btn-ghost" onClick={()=>setHubView('grid')}>{t('closeBtn')}</button>
+              </>
+            )}
+
+            {hubView==='members' && isOwner && (
+              <>
+                <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                <h2>{t('hubMembers')}</h2>
+
+                {isShared && (
+                  <div className="field">
+                    <label>{t('payerNamesLabel')}</label>
+                    {payerNames.map((n,i)=>(
+                      <div className="pct-row" key={i}>
+                        <span className="swatch" style={{display:'inline-block',width:10,height:10,borderRadius:3,background:colorFor(n)}}></span>
+                        <span style={{flex:1}}>{n}</span>
+                        <input type="number" value={(pctDraft?pctDraft[n]:sharePercents[n])||0}
+                          onChange={e=>setPctDraft({...(pctDraft||sharePercents), [n]: e.target.value})}/>
+                        <span>%</span>
+                        <button className="icon-btn" onClick={()=>{
+                          if(payerNames.length<=1){ showToast('⚠️ min 1'); return; }
+                          savePayerNames(payerNames.filter((_,idx)=>idx!==i));
+                        }}>✕</button>
+                      </div>
+                    ))}
+                    <div style={{display:'flex',gap:8,marginTop:10}}>
+                      <input value={newPayerInput} onChange={e=>setNewPayerInput(e.target.value)} placeholder={t('addPayerPh')}/>
+                      <button className="btn-ghost" style={{margin:0,width:'auto',padding:'10px 16px'}} onClick={()=>{
+                        if(!newPayerInput.trim()) return;
+                        savePayerNames([...payerNames, newPayerInput.trim()]);
+                        setNewPayerInput('');
+                      }}>{t('addBtnShort')}</button>
+                    </div>
+                    {pctDraft && (
+                      <>
+                        {Math.round(pctTotal)!==100 && <div style={{color:'#FFB454',fontSize:12.5,marginTop:8}}>{t('pctSumWarn')} ({Math.round(pctTotal)}%)</div>}
+                        <button className="btn-primary" disabled={Math.round(pctTotal)!==100} onClick={()=>{
+                          saveMeta({sharePercents: stringifyPct(pctDraft)});
+                          setPctDraft(null);
+                        }}>{t('savePct')}</button>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <div className="field">
+                  <label>{t('coEditorsLabel')}</label>
+                  {(meta.coEditorsList||'').split('|').filter(Boolean).map((em,i)=>(
+                    <div className="viewer-row" key={i}><span>{em}</span>
+                      <button className="icon-btn" onClick={()=>{
+                        const list = (meta.coEditorsList||'').split('|').filter(Boolean);
+                        saveCoEditorList(list.filter((_,idx)=>idx!==i));
+                      }}>✕</button>
+                    </div>
+                  ))}
+                  <div style={{display:'flex',gap:8,marginTop:10}}>
+                    <input type="email" placeholder={t('addViewerPh')} value={newCoEditorInput} onChange={e=>setNewCoEditorInput(e.target.value)}/>
+                    <button className="btn-ghost" style={{margin:0,width:'auto',padding:'10px 16px'}} onClick={()=>{
+                      if(!newCoEditorInput.trim()) return;
+                      const list = (meta.coEditorsList||'').split('|').filter(Boolean);
+                      saveCoEditorList([...list, newCoEditorInput.trim()]);
+                      setNewCoEditorInput('');
+                    }}>{t('addBtnShort')}</button>
+                  </div>
+                </div>
+
+                <div className="field">
+                  <label>{t('viewersLabel')}</label>
+                  {(meta.viewerEmailsList||'').split('|').filter(Boolean).map((em,i)=>(
+                    <div className="viewer-row" key={i}><span>{em}</span>
+                      <button className="icon-btn" onClick={()=>{
+                        const list = (meta.viewerEmailsList||'').split('|').filter(Boolean);
+                        saveViewerList(list.filter((_,idx)=>idx!==i));
+                      }}>✕</button>
+                    </div>
+                  ))}
+                  <div style={{display:'flex',gap:8,marginTop:10}}>
+                    <input type="email" placeholder={t('addViewerPh')} value={newViewerInput} onChange={e=>setNewViewerInput(e.target.value)}/>
+                    <button className="btn-ghost" style={{margin:0,width:'auto',padding:'10px 16px'}} onClick={()=>{
+                      if(!newViewerInput.trim()) return;
+                      const list = (meta.viewerEmailsList||'').split('|').filter(Boolean);
+                      saveViewerList([...list, newViewerInput.trim()]);
+                      setNewViewerInput('');
+                    }}>{t('addBtnShort')}</button>
+                  </div>
+                </div>
+
+                <button className="btn-ghost" style={{color:'var(--debt)'}} onClick={deleteAccount}>{t('deleteAccount')}</button>
+              </>
+            )}
+
+            {hubView==='appearance' && isOwner && (
+              <>
+                <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                <h2>{t('hubAppearance')}</h2>
+
+                <div className="field">
+                  <label>{t('currencyLabel')}</label>
+                  <div className="chip-row">
+                    {['৳','﷼','$','₹','€'].map(sym=>(
+                      <button key={sym} className="chip" style={currency===sym?{borderColor:'var(--accent)',background:'rgba(52,211,153,0.12)',color:'var(--accent)'}:{}} onClick={()=>saveMeta({currency:sym})}>{sym}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="field">
+                  <label>{t('coverIconLabel')}</label>
+                  <div className="chip-row">
+                    {['🤝','👤',...ICON_PRESETS].map(ic=>(
+                      <button key={ic} className="chip" style={{padding:'6px 9px',fontSize:16, ...((meta.coverIcon||(isShared?'🤝':'👤'))===ic?{borderColor:'var(--accent)'}:{})}} onClick={()=>saveMeta({coverIcon:ic})}>{ic}</button>
+                    ))}
+                  </div>
+                </div>
+                <div className="field">
+                  <label>{t('coverColorLabel')}</label>
+                  <div className="chip-row">
+                    {PALETTE.map(col=>(
+                      <button key={col} className="chip" style={{padding:'6px 14px', background:col, borderColor: (meta.coverColor||'#FFB454')===col?'var(--text)':col}} onClick={()=>saveMeta({coverColor:col})}></button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="field">
+                  <label>{t('manageCategories')}</label>
+                  {categories.map((c,i)=>(
+                    <div className="viewer-row" key={c.id}>
+                      {editingCatId===c.id ? (
+                        <>
+                          <div className="chip-row" style={{flex:'none'}}>
+                            {ICON_PRESETS.map(ic=>(
+                              <button key={ic} className="chip" style={{padding:'4px 8px',fontSize:15, ...(newCatIcon===ic?{borderColor:'var(--accent)'}:{})}} onClick={()=>setNewCatIcon(ic)}>{ic}</button>
+                            ))}
+                          </div>
+                          <input value={newCatLabel} onChange={e=>setNewCatLabel(e.target.value)} style={{flex:1}}/>
+                          <input type="number" value={newCatBudget} onChange={e=>setNewCatBudget(e.target.value)} placeholder={t('budgetPh')} style={{width:80}}/>
+                          <button className="icon-btn" onClick={()=>{
+                            const updated = categories.map(cc=> cc.id===c.id ? {...cc, icon:newCatIcon, label:newCatLabel||cc.label, budget:parseFloat(newCatBudget)||0} : cc);
+                            saveCategoryList(updated);
+                            setEditingCatId(null);
+                          }}>💾</button>
+                        </>
+                      ) : (
+                        <>
+                          <span>{c.icon} {c.label}{c.budget>0 && <span style={{color:'var(--muted)',fontSize:11}}> · {t('budgetLabel')} {currency}{money(c.budget)}</span>}</span>
+                          <span style={{display:'flex',gap:6}}>
+                            <button className="icon-btn" onClick={()=>{ setEditingCatId(c.id); setNewCatIcon(c.icon); setNewCatLabel(c.label); setNewCatBudget(c.budget?String(c.budget):''); }}>✏️</button>
+                            <button className="icon-btn" onClick={()=>{
+                              if(categories.length<=1){ showToast('⚠️ min 1'); return; }
+                              askConfirm(t('confirmDeleteExpense'), ()=> saveCategoryList(categories.filter(cc=>cc.id!==c.id)));
+                            }}>✕</button>
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  <div style={{marginTop:10}}>
+                    <div className="chip-row" style={{marginBottom:8}}>
+                      {ICON_PRESETS.map(ic=>(
+                        <button key={ic} className="chip" style={{padding:'4px 8px',fontSize:15, ...(newCatIcon===ic && !editingCatId?{borderColor:'var(--accent)'}:{})}} onClick={()=>setNewCatIcon(ic)}>{ic}</button>
+                      ))}
+                    </div>
+                    <div style={{display:'flex',gap:8}}>
+                      <input value={editingCatId?'':newCatLabel} onChange={e=>setNewCatLabel(e.target.value)} placeholder={t('categoryNamePh')}/>
+                      <button className="btn-ghost" style={{margin:0,width:'auto',padding:'10px 16px'}} onClick={()=>{
+                        if(!newCatLabel.trim()) return;
+                        saveCategoryList([...categories, {id:uid(), icon:newCatIcon, label:newCatLabel.trim()}]);
+                        setNewCatLabel(''); setNewCatIcon('📦');
+                      }}>{t('addBtnShort')}</button>
+                    </div>
+                  </div>
+                </div>
+                <button className="btn-ghost" onClick={()=>setHubView('grid')}>{t('closeBtn')}</button>
+              </>
+            )}
+
+            {hubView==='passcode' && (
+              <>
+                <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                <h2>{t('hubPasscode')}</h2>
+                {pin ? (
+                  <div className="field">
+                    <div style={{fontSize:13,color:'var(--muted)',marginBottom:10}}>🔒 PIN active</div>
+                    <button className="btn-ghost" onClick={disablePin}>{t('pinDisable')}</button>
+                  </div>
+                ) : (
+                  <div className="field">
+                    <label>{t('pinLabel')}</label>
+                    <input type="password" inputMode="numeric" maxLength="4" value={pinSetupInput} onChange={e=>setPinSetupInput(e.target.value)} placeholder={t('pinSetPh')}/>
+                    <button className="btn-primary" onClick={enablePin}>{t('pinEnable')}</button>
+                  </div>
+                )}
+                <button className="btn-ghost" onClick={()=>setHubView('grid')}>{t('closeBtn')}</button>
+              </>
+            )}
+
+            {hubView==='backup' && (
+              <>
+                <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                <h2>{t('hubBackup')}</h2>
+                <button className="btn-ghost" onClick={exportBackup}>{t('backupExport')}</button>
+                {isOwner && (
+                  <div className="field" style={{marginTop:10}}>
+                    <label>{t('backupImport')}</label>
+                    <input type="file" accept="application/json" onChange={e=>{ const f=e.target.files[0]; if(f) importBackup(f); }}/>
+                  </div>
+                )}
+                <button className="btn-ghost" onClick={()=>setHubView('grid')}>{t('closeBtn')}</button>
+              </>
+            )}
+
+            {hubView==='help' && (
+              <>
+                <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                <h2>{t('hubHelp')}</h2>
+                <div style={{fontSize:14,color:'var(--muted)',lineHeight:1.6}}>{t('helpText')}</div>
+                <button className="btn-ghost" onClick={()=>setHubView('grid')}>{t('closeBtn')}</button>
+              </>
+            )}
+
+            {hubView==='feedback' && (
+              <>
+                <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                <h2>{t('hubFeedback')}</h2>
+                <div style={{fontSize:14,color:'var(--muted)',lineHeight:1.6,marginBottom:14}}>{t('feedbackText')}</div>
+                <a href={"mailto:"+LEGACY_OWNER_EMAIL+"?subject=Hisab%20App%20Feedback"} className="btn-primary" style={{display:'block',textAlign:'center',textDecoration:'none',boxSizing:'border-box'}}>✉️ Email</a>
+                <button className="btn-ghost" onClick={()=>setHubView('grid')}>{t('closeBtn')}</button>
+              </>
+            )}
+
+            {hubView==='recommend' && (
+              <>
+                <div className="hub-back" onClick={()=>setHubView('grid')}>{t('hubBack')}</div>
+                <h2>{t('hubRecommend')}</h2>
+                <div style={{fontSize:14,color:'var(--muted)',lineHeight:1.6,marginBottom:14}}>{t('recommendText')}</div>
+                <button className="btn-primary" onClick={()=>{
+                  const link = window.location.origin + window.location.pathname;
+                  if(navigator.share){ navigator.share({title:'হিসাব', url:link}).catch(()=>{}); }
+                  else { navigator.clipboard.writeText(link).then(()=>showToast(t('linkCopied'))); }
+                }}>📤 Share</button>
+                <button className="btn-ghost" onClick={()=>setHubView('grid')}>{t('closeBtn')}</button>
+              </>
+            )}
+
+          </div>
+        </div>
+      )}
+
+      {confirmState && (
+        <div className="sheet-overlay" onClick={()=>setConfirmState(null)}>
+          <div className="sheet" onClick={e=>e.stopPropagation()}>
+            <div className="sheet-handle"></div>
+            <h2>⚠️ {confirmState.message}</h2>
+            <button className="btn-primary" style={{background:'var(--debt)'}} onClick={()=>{ confirmState.onConfirm(); setConfirmState(null); }}>{t('confirmYes')}</button>
+            <button className="btn-ghost" onClick={()=>setConfirmState(null)}>{t('cancelBtn')}</button>
+          </div>
+        </div>
+      )}
+
+      {viewingPhoto && (
+        <div className="photo-modal" onClick={()=>setViewingPhoto(null)}>
+          <button className="closebtn" onClick={()=>setViewingPhoto(null)}>✕</button>
+          <img src={viewingPhoto}/>
+        </div>
+      )}
+
+      {toast && <div className="toast">{toast}</div>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+
+<script>
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+  }
+</script>
+</body>
+</html>
