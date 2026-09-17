@@ -1,7 +1,7 @@
 {
-  "name": "মেস হিসাব — শিব্বির ও মোবারক",
-  "short_name": "মেস হিসাব",
-  "description": "মেস খরচ ট্র্যাক করার অ্যাপ",
+  "name": "নাফাক্বাত",
+  "short_name": "নাফাক্বাত",
+  "description": "হিসাব ট্র্যাকার",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
